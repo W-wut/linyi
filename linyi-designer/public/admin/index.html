@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>林一设计 · 管理后台</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans SC',sans-serif;background:#f5f5f5;color:#333;line-height:1.6}
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center}
+.login-box{background:#fff;padding:40px;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,.08);width:360px}
+.login-box h2{text-align:center;margin-bottom:24px;font-size:1.3rem;color:#2c2c2c}
+.login-box input{width:100%;padding:12px 14px;border:1px solid #ddd;border-radius:4px;font-size:.9rem;margin-bottom:16px;outline:none}
+.login-box input:focus{border-color:#b8a088}
+.login-box button{width:100%;padding:12px;background:#2c2c2c;color:#fff;border:none;border-radius:4px;font-size:.9rem;cursor:pointer;transition:background .3s}
+.login-box button:hover{background:#b8a088}
+.login-box .error{color:#e74c3c;font-size:.8rem;margin-top:8px;text-align:center}
+
+.admin-wrap{display:none;min-height:100vh}
+.admin-header{background:#2c2c2c;color:#fff;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between}
+.admin-header h1{font-size:1rem;font-weight:500}
+.admin-header .logout{color:#ccc;font-size:.8rem;cursor:pointer}
+.admin-header .logout:hover{color:#fff}
+
+.admin-nav{display:flex;background:#fff;border-bottom:1px solid #e8e8e8;padding:0 24px}
+.admin-nav a{padding:14px 20px;color:#666;text-decoration:none;font-size:.85rem;border-bottom:2px solid transparent;transition:all .3s;cursor:pointer}
+.admin-nav a:hover{color:#2c2c2c}
+.admin-nav a.active{color:#2c2c2c;border-bottom-color:#b8a088;font-weight:500}
+
+.admin-content{padding:24px;max-width:1200px;margin:0 auto}
+.panel{display:none}
+.panel.active{display:block}
+
+.card{background:#fff;border-radius:6px;padding:24px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.card h3{font-size:1rem;margin-bottom:16px;color:#2c2c2c}
+
+.form-row{margin-bottom:14px}
+.form-row label{display:block;font-size:.8rem;color:#888;margin-bottom:4px}
+.form-row input,.form-row textarea,.form-row select{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:4px;font-size:.85rem;outline:none;font-family:inherit}
+.form-row input:focus,.form-row textarea:focus,.form-row select:focus{border-color:#b8a088}
+.form-row textarea{height:80px;resize:vertical}
+.form-row button{padding:10px 24px;background:#2c2c2c;color:#fff;border:none;border-radius:4px;font-size:.85rem;cursor:pointer}
+.form-row button:hover{background:#b8a088}
+
+.upload-area{border:2px dashed #ddd;border-radius:6px;padding:30px;text-align:center;cursor:pointer;transition:border-color .3s}
+.upload-area:hover{border-color:#b8a088}
+.upload-area p{color:#888;font-size:.85rem}
+.upload-area.has-file{border-color:#b8a088;background:#faf8f6}
+
+.data-table{width:100%;border-collapse:collapse;font-size:.85rem}
+.data-table th,.data-table td{padding:12px;text-align:left;border-bottom:1px solid #eee}
+.data-table th{font-weight:600;color:#888;font-size:.8rem}
+.data-table td{color:#555}
+.data-table tr:hover{background:#fafafa}
+.data-table .msg-content{max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.data-table .badge{padding:2px 8px;border-radius:12px;font-size:.75rem}
+.data-table .badge.show{background:#e8f5e9;color:#2e7d32}
+.data-table .badge.hide{background:#ffebee;color:#c62828}
+.data-table button{padding:4px 10px;border:none;border-radius:3px;font-size:.75rem;cursor:pointer;margin-right:4px}
+.data-table .btn-toggle{background:#f0f0f0;color:#555}
+.data-table .btn-toggle:hover{background:#e0e0e0}
+.data-table .btn-del{background:#ffebee;color:#c62828}
+.data-table .btn-del:hover{background:#ffcdd2}
+.data-table .img-preview{width:60px;height:45px;object-fit:cover;border-radius:4px}
+
+.empty{color:#999;text-align:center;padding:40px;font-size:.85rem}
+.loading{color:#888;text-align:center;padding:40px;font-size:.85rem}
+.alert{padding:12px 16px;border-radius:4px;margin-bottom:16px;font-size:.85rem}
+.alert.success{background:#e8f5e9;color:#2e7d32}
+.alert.error{background:#ffebee;color:#c62828}
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div class="login-wrap" id="login-wrap">
+  <div class="login-box">
+    <h2>林一设计 · 管理后台</h2>
+    <input type="password" id="token-input" placeholder="输入管理密码" />
+    <button onclick="doLogin()">登录</button>
+    <div class="error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- Admin -->
+<div class="admin-wrap" id="admin-wrap">
+  <div class="admin-header">
+    <h1>林一设计 · 管理后台</h1>
+    <span class="logout" onclick="doLogout()">退出登录</span>
+  </div>
+  <div class="admin-nav">
+    <a class="active" onclick="switchTab('contacts')">咨询留言</a>
+    <a onclick="switchTab('messages')">留言板</a>
+    <a onclick="switchTab('works')">作品管理</a>
+    <a onclick="switchTab('upload')">上传作品</a>
+    <a onclick="switchTab('about')">关于我</a>
+    <a onclick="switchTab('content')">网站内容</a>
+    <a onclick="switchTab('settings')">网站设置</a>
+  </div>
+  <div class="admin-content">
+
+    <!-- Contacts -->
+    <div class="panel active" id="panel-contacts">
+      <div class="card">
+        <h3>咨询留言列表</h3>
+        <div id="contacts-loading" class="loading">加载中...</div>
+        <div id="contacts-content"></div>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="panel" id="panel-messages">
+      <div class="card">
+        <h3>留言板管理</h3>
+        <div id="messages-loading" class="loading">加载中...</div>
+        <div id="messages-content"></div>
+      </div>
+    </div>
+
+    <!-- Works -->
+    <div class="panel" id="panel-works">
+      <div class="card">
+        <h3>作品列表</h3>
+        <div id="works-loading" class="loading">加载中...</div>
+        <div id="works-content"></div>
+      </div>
+    </div>
+
+    <!-- Upload -->
+    <div class="panel" id="panel-upload">
+      <div class="card">
+        <h3>上传新作品</h3>
+        <div class="form-row">
+          <label>作品标题</label>
+          <input type="text" id="w-title" placeholder="例如：光影之间 · 私宅" />
+        </div>
+        <div class="form-row">
+          <label>分类</label>
+          <select id="w-category">
+            <option value="私宅">私宅</option>
+            <option value="商业">商业</option>
+            <option value="办公">办公</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>年份</label>
+          <input type="text" id="w-year" placeholder="2024" />
+        </div>
+        <div class="form-row">
+          <label>标签（空格分隔）</label>
+          <input type="text" id="w-tags" placeholder="现代 白墙 光影 153㎡" />
+        </div>
+        <div class="form-row">
+          <label>描述</label>
+          <textarea id="w-desc" placeholder="简短描述"></textarea>
+        </div>
+        <div class="form-row">
+          <label>排序（数字越小越靠前）</label>
+          <input type="number" id="w-order" value="0" />
+        </div>
+        <div class="form-row">
+          <label>作品图片（最多9张）</label>
+          <div class="upload-area" id="upload-area" onclick="document.getElementById('w-file').click()">
+            <p id="upload-hint">点击选择图片，或拖拽图片到此处（可多选）</p>
+          </div>
+          <input type="file" id="w-file" accept="image/*" multiple style="display:none" onchange="handleFileSelect(this)" />
+        </div>
+        <div class="form-row">
+          <button onclick="doUpload()">上传作品</button>
+        </div>
+        <div id="upload-msg"></div>
+      </div>
+    </div>
+
+    <!-- About -->
+    <div class="panel" id="panel-about">
+      <div class="card">
+        <h3>关于我 · 编辑</h3>
+        <div class="form-row">
+          <label>个人照片</label>
+          <div class="upload-area has-file" id="about-upload-area" onclick="document.getElementById('about-file').click()" style="width:200px;height:200px;display:flex;align-items:center;justify-content:center;overflow:hidden">
+            <img id="about-preview" src="" style="max-width:100%;max-height:100%;object-fit:contain;display:none" />
+            <p id="about-upload-hint">点击上传照片</p>
+          </div>
+          <input type="file" id="about-file" accept="image/*" style="display:none" onchange="handleAboutPhoto(this)" />
+        </div>
+        <div class="form-row">
+          <label>个人介绍 第一段</label>
+          <textarea id="about-intro1" style="height:60px"></textarea>
+        </div>
+        <div class="form-row">
+          <label>个人介绍 第二段</label>
+          <textarea id="about-intro2" style="height:60px"></textarea>
+        </div>
+        <div class="form-row">
+          <label>个人介绍 第三段</label>
+          <textarea id="about-intro3" style="height:60px"></textarea>
+        </div>
+        <div style="display:flex;gap:16px">
+          <div class="form-row" style="flex:1">
+            <label>经验年限</label>
+            <input type="text" id="about-stat-years" placeholder="8+" />
+          </div>
+          <div class="form-row" style="flex:1">
+            <label>落地项目数</label>
+            <input type="text" id="about-stat-projects" placeholder="60+" />
+          </div>
+          <div class="form-row" style="flex:1">
+            <label>好评率</label>
+            <input type="text" id="about-stat-satisfaction" placeholder="100%" />
+          </div>
+        </div>
+        <div class="form-row">
+          <button onclick="saveAbout()">保存修改</button>
+        </div>
+        <div id="about-msg"></div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="panel" id="panel-content">
+      <div class="card"><h3>头部 Hero</h3>
+        <div class="form-row"><label>副标题</label><input type="text" id="ct-hero_subtitle" /></div>
+        <div class="form-row"><label>主标题</label><input type="text" id="ct-hero_title" /></div>
+        <div class="form-row"><label>描述</label><textarea id="ct-hero_desc" style="height:80px"></textarea></div>
+      </div>
+      <div class="card"><h3>关于我 · 副标题</h3>
+        <div class="form-row"><label>小标题文字</label><input type="text" id="ct-about_subtitle" /></div>
+      </div>
+      <div class="card"><h3>设计理念</h3>
+        <div class="form-row"><label>理念一 标题</label><input type="text" id="ct-phi_title1" /></div>
+        <div class="form-row"><label>理念一 描述</label><textarea id="ct-phi_desc1" style="height:60px"></textarea></div>
+        <div class="form-row"><label>理念二 标题</label><input type="text" id="ct-phi_title2" /></div>
+        <div class="form-row"><label>理念二 描述</label><textarea id="ct-phi_desc2" style="height:60px"></textarea></div>
+        <div class="form-row"><label>理念三 标题</label><input type="text" id="ct-phi_title3" /></div>
+        <div class="form-row"><label>理念三 描述</label><textarea id="ct-phi_desc3" style="height:60px"></textarea></div>
+      </div>
+      <div class="card"><h3>服务内容</h3>
+        <div class="form-row"><label>服务一 标题</label><input type="text" id="ct-svc_title1" /></div>
+        <div class="form-row"><label>服务一 描述</label><textarea id="ct-svc_desc1" style="height:60px"></textarea></div>
+        <div class="form-row"><label>服务二 标题</label><input type="text" id="ct-svc_title2" /></div>
+        <div class="form-row"><label>服务二 描述</label><textarea id="ct-svc_desc2" style="height:60px"></textarea></div>
+        <div class="form-row"><label>服务三 标题</label><input type="text" id="ct-svc_title3" /></div>
+        <div class="form-row"><label>服务三 描述</label><textarea id="ct-svc_desc3" style="height:60px"></textarea></div>
+      </div>
+      <div class="card"><h3>联系信息</h3>
+        <div class="form-row"><label>介绍语</label><input type="text" id="ct-contact_intro" /></div>
+        <div class="form-row"><label>电话</label><input type="text" id="ct-contact_phone" /></div>
+        <div class="form-row"><label>邮箱</label><input type="text" id="ct-contact_email" /></div>
+        <div class="form-row"><label>地址</label><input type="text" id="ct-contact_address" /></div>
+        <div class="form-row"><label>营业时间</label><input type="text" id="ct-contact_hours" /></div>
+        <div class="form-row"><label>底部备注</label><input type="text" id="ct-contact_note" /></div>
+      </div>
+      <div class="card"><h3>页脚</h3>
+        <div class="form-row"><label>微信公众号</label><input type="text" id="ct-footer_wechat" /></div>
+        <div class="form-row"><label>小红书</label><input type="text" id="ct-footer_xhs" /></div>
+        <div class="form-row"><label>Instagram</label><input type="text" id="ct-footer_ig" /></div>
+        <div class="form-row"><label>版权信息</label><input type="text" id="ct-footer_copyright" /></div>
+      </div>
+      <div class="card">
+        <div class="form-row"><button onclick="saveContent()">保存全部内容</button></div>
+        <div id="content-msg"></div>
+      </div>
+    </div>
+
+    <!-- Settings -->
+    <div class="panel" id="panel-settings">
+      <div class="card">
+        <h3>网站设置</h3>
+        <div style="margin-bottom:20px">
+          <label style="font-size:.85rem;color:#555;display:block;margin-bottom:8px">留言板状态</label>
+          <button id="btn-guestbook-toggle" style="padding:10px 24px;border:none;border-radius:4px;font-size:.85rem;cursor:pointer" onclick="toggleGuestbook()">加载中...</button>
+          <span id="guestbook-status" style="margin-left:12px;font-size:.8rem;color:#888"></span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+var token = localStorage.getItem('admin_token') || '';
+var API_BASE = window.location.origin;
+var selectedFiles = [];
+
+// Check login on page load - verify stored token
+if (token) {
+  fetch(API_BASE + '/api/admin', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token },
+    body: JSON.stringify({ action: 'verify', token: token })
+  }).then(function(r) { return r.json(); }).then(function(res) {
+    if (res.success) {
+      document.getElementById('login-wrap').style.display = 'none';
+      document.getElementById('admin-wrap').style.display = 'block';
+      loadAll();
+    } else {
+      // Stored token is invalid, clear it
+      localStorage.removeItem('admin_token');
+      token = '';
+    }
+  }).catch(function() {
+    // Network error, still show login
+    localStorage.removeItem('admin_token');
+    token = '';
+  });
+}
+
+function doLogin() {
+  var inputToken = document.getElementById('token-input').value.trim();
+  var errorEl = document.getElementById('login-error');
+  if (!inputToken) return;
+
+  // Verify token with backend before showing admin panel
+  fetch(API_BASE + '/api/admin', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Admin-Token': inputToken },
+    body: JSON.stringify({ action: 'verify', token: inputToken })
+  }).then(function(r) { return r.json(); }).then(function(res) {
+    if (res.success) {
+      token = inputToken;
+      localStorage.setItem('admin_token', token);
+      document.getElementById('login-wrap').style.display = 'none';
+      document.getElementById('admin-wrap').style.display = 'block';
+      document.getElementById('token-input').value = '';
+      errorEl.textContent = '';
+      loadAll();
+    } else {
+      errorEl.textContent = '密码错误，请重试';
+    }
+  }).catch(function() {
+    errorEl.textContent = '网络错误，请稍后重试';
+  });
+}
+
+function doLogout() {
+  localStorage.removeItem('admin_token');
+  token = '';
+  location.reload();
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.admin-nav a').forEach(function(a) { a.classList.remove('active'); });
+  event.target.classList.add('active');
+  document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
+  document.getElementById('panel-' + name).classList.add('active');
+}
+
+function apiPost(path, body) {
+  return fetch(API_BASE + path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token },
+    body: JSON.stringify(body)
+  }).then(function(r) { return r.json(); });
+}
+
+function apiDelete(path, body) {
+  return fetch(API_BASE + path, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  }).then(function(r) { return r.json(); });
+}
+
+// Load all data
+function loadAll() {
+  loadContacts();
+  loadMessages();
+  loadWorks();
+  loadSettings();
+  loadAbout();
+  loadContent();
+}
+
+// Contacts
+function loadContacts() {
+  apiPost('/api/admin', { action: 'contacts', token: token }).then(function(res) {
+    var el = document.getElementById('contacts-content');
+    var loadEl = document.getElementById('contacts-loading');
+    loadEl.style.display = 'none';
+    if (!res.success || !res.data || res.data.length === 0) {
+      el.innerHTML = '<div class="empty">暂无咨询留言</div>';
+      return;
+    }
+    var html = '<table class="data-table"><thead><tr><th>时间</th><th>姓名</th><th>联系方式</th><th>项目类型</th><th>留言</th><th>操作</th></tr></thead><tbody>';
+    res.data.forEach(function(c) {
+      html += '<tr><td>' + formatDate(c.created_at) + '</td><td>' + esc(c.name) + '</td><td>' + esc(c.email) + '</td><td>' + esc(c.project_type || '-') + '</td><td>' + esc(c.message) + '</td><td><button class="btn-del" onclick="deleteContact(' + c.id + ')">删除</button></td></tr>';
+    });
+    html += '</tbody></table>';
+    el.innerHTML = html;
+  });
+}
+
+// Messages
+function loadMessages() {
+  apiPost('/api/admin', { action: 'messages', token: token }).then(function(res) {
+    var el = document.getElementById('messages-content');
+    var loadEl = document.getElementById('messages-loading');
+    loadEl.style.display = 'none';
+    if (!res.success || !res.data || res.data.length === 0) {
+      el.innerHTML = '<div class="empty">暂无留言</div>';
+      return;
+    }
+    var html = '<table class="data-table"><thead><tr><th>时间</th><th>姓名</th><th>内容</th><th>状态</th><th>操作</th></tr></thead><tbody>';
+    res.data.forEach(function(m) {
+      var statusBadge = m.visible ? '<span class="badge show">显示</span>' : '<span class="badge hide">隐藏</span>';
+      html += '<tr><td>' + formatDate(m.created_at) + '</td><td>' + esc(m.name) + '</td><td class="msg-content">' + esc(m.content) + '</td><td>' + statusBadge + '</td><td><button class="btn-toggle" onclick="toggleMessage(' + m.id + ',' + !m.visible + ')">' + (m.visible ? '隐藏' : '显示') + '</button><button class="btn-del" onclick="deleteMessage(' + m.id + ')">删除</button></td></tr>';
+    });
+    html += '</tbody></table>';
+    el.innerHTML = html;
+  });
+}
+
+function toggleMessage(id, visible) {
+  apiPost('/api/admin', { action: 'toggle_message', id: id, visible: visible, token: token }).then(function() {
+    loadMessages();
+  });
+}
+
+function deleteMessage(id) {
+  if (!confirm('确定删除这条留言？')) return;
+  apiPost('/api/admin', { action: 'delete_message', id: id, token: token }).then(function() {
+    loadMessages();
+  });
+}
+
+// Works
+function loadWorks() {
+  apiPost('/api/admin', { action: 'works', token: token }).then(function(res) {
+    var el = document.getElementById('works-content');
+    var loadEl = document.getElementById('works-loading');
+    loadEl.style.display = 'none';
+    if (!res.success || !res.data || res.data.length === 0) {
+      el.innerHTML = '<div class="empty">暂无作品</div>';
+      return;
+    }
+    var html = '<table class="data-table"><thead><tr><th>预览</th><th>标题</th><th>分类</th><th>年份</th><th>图片数</th><th>操作</th></tr></thead><tbody>';
+    res.data.forEach(function(w) {
+      var firstImg = (w.image_urls && w.image_urls.length > 0) ? w.image_urls[0] : (w.image_url || '');
+      var imgCount = (w.image_urls && w.image_urls.length) || (w.image_url ? 1 : 0);
+      html += '<tr><td>' + (firstImg ? '<img class="img-preview" src="' + esc(firstImg) + '" />' : '-') + '</td><td>' + esc(w.title) + '</td><td>' + esc(w.category || '-') + '</td><td>' + esc(w.year || '-') + '</td><td>' + imgCount + '</td><td><button class="btn-del" onclick="deleteWork(' + w.id + ')">删除</button></td></tr>';
+    });
+    html += '</tbody></table>';
+    el.innerHTML = html;
+  });
+}
+
+function deleteWork(id) {
+  if (!confirm('确定删除这个作品？')) return;
+  apiDelete('/api/works', { id: id }).then(function() {
+    loadWorks();
+  });
+}
+
+function deleteContact(id) {
+  if (!confirm('确定删除这条咨询？')) return;
+  apiPost('/api/admin', { action: 'delete_contact', id: id, token: token }).then(function() {
+    loadContacts();
+  });
+}
+
+// Upload
+function handleFileSelect(input) {
+  selectedFiles = Array.from(input.files).slice(0, 9);
+  var area = document.getElementById('upload-area');
+  var hint = document.getElementById('upload-hint');
+  if (selectedFiles.length === 0) {
+    area.classList.remove('has-file');
+    hint.textContent = '点击选择图片，或拖拽图片到此处（可多选）';
+    return;
+  }
+  area.classList.add('has-file');
+  var names = selectedFiles.map(function(f) { return f.name; }).join(', ');
+  hint.textContent = '已选择 ' + selectedFiles.length + ' 张：' + names;
+}
+
+function doUpload() {
+  var msgEl = document.getElementById('upload-msg');
+  if (selectedFiles.length === 0) {
+    msgEl.innerHTML = '<div class="alert error">请先选择图片</div>';
+    return;
+  }
+
+  msgEl.innerHTML = '<div class="alert" style="background:#fff3e0;color:#e65100">上传中... 0/' + selectedFiles.length + '</div>';
+
+  // Read all files as base64
+  var total = selectedFiles.length;
+  var results = [];
+  var done = 0;
+
+  function tryFinish() {
+    if (done < total) return;
+    var body = {
+      title: document.getElementById('w-title').value || '未命名作品',
+      category: document.getElementById('w-category').value,
+      year: document.getElementById('w-year').value,
+      tags: document.getElementById('w-tags').value,
+      description: document.getElementById('w-desc').value,
+      sort_order: parseInt(document.getElementById('w-order').value) || 0,
+      image_base64s: results.map(function(r) { return r.data; }),
+      image_filenames: results.map(function(r) { return r.name; })
+    };
+    fetch(API_BASE + '/api/works', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }).then(function(r) { return r.json(); }).then(function(res) {
+      if (res.success) {
+        msgEl.innerHTML = '<div class="alert success">上传成功！共 ' + total + ' 张图片</div>';
+        document.getElementById('w-title').value = '';
+        document.getElementById('w-year').value = '';
+        document.getElementById('w-tags').value = '';
+        document.getElementById('w-desc').value = '';
+        document.getElementById('w-file').value = '';
+        selectedFiles = [];
+        var area = document.getElementById('upload-area');
+        area.classList.remove('has-file');
+        document.getElementById('upload-hint').textContent = '点击选择图片，或拖拽图片到此处（可多选）';
+        loadWorks();
+      } else {
+        msgEl.innerHTML = '<div class="alert error">上传失败：' + (res.error || '未知错误') + '</div>';
+      }
+    }).catch(function() {
+      msgEl.innerHTML = '<div class="alert error">网络错误</div>';
+    });
+  }
+
+  selectedFiles.forEach(function(file, i) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      results[i] = { name: file.name, data: e.target.result };
+      done++;
+      msgEl.innerHTML = '<div class="alert" style="background:#fff3e0;color:#e65100">上传中... ' + done + '/' + total + '</div>';
+      tryFinish();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// About
+var aboutPhotoBase64 = '';
+
+function loadAbout() {
+  apiPost('/api/admin', { action: 'about', token: token }).then(function(res) {
+    if (!res.success) return;
+    var d = res.data || {};
+    document.getElementById('about-intro1').value = d.intro1 || '';
+    document.getElementById('about-intro2').value = d.intro2 || '';
+    document.getElementById('about-intro3').value = d.intro3 || '';
+    document.getElementById('about-stat-years').value = d.stat_years || '';
+    document.getElementById('about-stat-projects').value = d.stat_projects || '';
+    document.getElementById('about-stat-satisfaction').value = d.stat_satisfaction || '';
+    aboutPhotoBase64 = d.image_url || '';
+    updateAboutPreview();
+  });
+}
+
+function handleAboutPhoto(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    aboutPhotoBase64 = e.target.result;
+    updateAboutPreview();
+  };
+  reader.readAsDataURL(file);
+}
+
+function updateAboutPreview() {
+  var img = document.getElementById('about-preview');
+  var hint = document.getElementById('about-upload-hint');
+  if (aboutPhotoBase64) {
+    img.src = aboutPhotoBase64;
+    img.style.display = 'block';
+    hint.style.display = 'none';
+  } else {
+    img.style.display = 'none';
+    hint.style.display = 'block';
+  }
+}
+
+function saveAbout() {
+  var msgEl = document.getElementById('about-msg');
+  var data = {
+    image_url: aboutPhotoBase64,
+    intro1: document.getElementById('about-intro1').value,
+    intro2: document.getElementById('about-intro2').value,
+    intro3: document.getElementById('about-intro3').value,
+    stat_years: document.getElementById('about-stat-years').value,
+    stat_projects: document.getElementById('about-stat-projects').value,
+    stat_satisfaction: document.getElementById('about-stat-satisfaction').value
+  };
+  apiPost('/api/admin', { action: 'update_about', token: token, data: data }).then(function(res) {
+    if (res.success) {
+      msgEl.innerHTML = '<div class="alert success">保存成功！</div>';
+      setTimeout(function() { msgEl.innerHTML = ''; }, 2000);
+    } else {
+      msgEl.innerHTML = '<div class="alert error">保存失败</div>';
+    }
+  });
+}
+
+// Content
+var ctFields = ['hero_subtitle','hero_title','hero_desc','about_subtitle',
+  'phi_title1','phi_desc1','phi_title2','phi_desc2','phi_title3','phi_desc3',
+  'svc_title1','svc_desc1','svc_title2','svc_desc2','svc_title3','svc_desc3',
+  'contact_intro','contact_phone','contact_email','contact_address','contact_hours','contact_note',
+  'footer_wechat','footer_xhs','footer_ig','footer_copyright'];
+
+function loadContent() {
+  apiPost('/api/admin', { action: 'content', token: token }).then(function(res) {
+    if (!res.success) return;
+    var d = res.data || {};
+    ctFields.forEach(function(f) {
+      var el = document.getElementById('ct-' + f);
+      if (el) el.value = d[f] || '';
+    });
+  });
+}
+
+function saveContent() {
+  var data = {};
+  ctFields.forEach(function(f) {
+    var el = document.getElementById('ct-' + f);
+    if (el) data[f] = el.value;
+  });
+  apiPost('/api/admin', { action: 'update_content', token: token, data: data }).then(function(res) {
+    var msg = document.getElementById('content-msg');
+    if (res.success) {
+      msg.innerHTML = '<div class="alert success">保存成功！</div>';
+      setTimeout(function() { msg.innerHTML = ''; }, 2000);
+    } else {
+      msg.innerHTML = '<div class="alert error">保存失败</div>';
+    }
+  });
+}
+
+// Settings
+function loadSettings() {
+  apiPost('/api/admin', { action: 'settings', token: token }).then(function(res) {
+    var btn = document.getElementById('btn-guestbook-toggle');
+    var status = document.getElementById('guestbook-status');
+    if (res.success) {
+      var enabled = res.data && res.data.guestbook_enabled;
+      updateGuestbookBtn(enabled);
+      status.textContent = '访客可以在前台留言';
+    }
+  }).catch(function() {
+    document.getElementById('btn-guestbook-toggle').textContent = '加载失败';
+  });
+}
+
+function toggleGuestbook() {
+  apiPost('/api/admin', { action: 'toggle_guestbook', token: token }).then(function(res) {
+    if (res.success) {
+      updateGuestbookBtn(res.guestbook_enabled);
+      document.getElementById('guestbook-status').textContent = res.guestbook_enabled ? '访客可以在前台留言' : '留言板已关闭，前台不显示';
+    }
+  });
+}
+
+function updateGuestbookBtn(enabled) {
+  var btn = document.getElementById('btn-guestbook-toggle');
+  btn.textContent = enabled ? '关闭留言板' : '开启留言板';
+  btn.style.background = enabled ? '#c0392b' : '#27ae60';
+  btn.style.color = '#fff';
+}
+
+function formatDate(iso) {
+  var d = new Date(iso);
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+function pad(n) { return n < 10 ? '0' + n : n; }
+function esc(s) {
+  if (!s) return '';
+  return s.toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+
+</body>
+</html>

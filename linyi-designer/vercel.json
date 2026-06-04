@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "env": {
+    "SUPABASE_URL": "https://qkvjkphcktzevitptdvi.supabase.co",
+    "SUPABASE_SERVICE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrdmprcGhja3R6ZXZ0aXB0ZHZpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MDU5MDYxOCwiZXhwIjoyMDk2MTY2NjE4fQ.S0x0ETccIfKOEKMPaw5oFVV1X9gZMhBtCH2ZYyE_B3Y",
+    "ADMIN_TOKEN": "linyi20260605",
+    "GUESTBOOK_ENABLED": "true"
+  },
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    }
+  ]
+}
