@@ -9,10 +9,5 @@
       "source": "/(.*)",
       "destination": "/public/$1"
     }
-  ],
-  "functions": {
-    "api/**/*.js": {
-      "runtime": "@vercel/node@3"
-    }
-  }
+  ]
 }
