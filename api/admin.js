@@ -119,11 +119,26 @@ module.exports = async function handler(req, res) {
       const { data, error } = await supabase
         .from('works')
         .select('*')
-        .order('sort_order', { ascending: true });
+        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
+
+      // Parse image_urls from JSON string to array
+      const works = (data || []).map(w => {
+        let urls = [];
+        if (w.image_urls) {
+          try { urls = JSON.parse(w.image_urls); } catch(e) { urls = []; }
+        }
+        // Backward compatibility: if image_url exists but image_urls doesn't
+        if (urls.length === 0 && w.image_url) {
+          urls = [w.image_url];
+        }
+        return { ...w, image_urls: urls };
+      });
+
       res.writeHead(200, corsHeaders);
-      res.end(JSON.stringify({ success: true, data: data || [] }));
+      res.end(JSON.stringify({ success: true, data: works }));
       return;
     }
 
