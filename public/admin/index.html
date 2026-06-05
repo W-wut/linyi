@@ -284,32 +284,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans SC',sans
 </div>
 
 <script>
-var token = localStorage.getItem('admin_token') || '';
+var token = '';
 var API_BASE = window.location.origin;
 var selectedFiles = [];
-
-// Check login on page load - verify stored token
-if (token) {
-  fetch(API_BASE + '/api/admin', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token },
-    body: JSON.stringify({ action: 'verify', token: token })
-  }).then(function(r) { return r.json(); }).then(function(res) {
-    if (res.success) {
-      document.getElementById('login-wrap').style.display = 'none';
-      document.getElementById('admin-wrap').style.display = 'block';
-      loadAll();
-    } else {
-      // Stored token is invalid, clear it
-      localStorage.removeItem('admin_token');
-      token = '';
-    }
-  }).catch(function() {
-    // Network error, still show login
-    localStorage.removeItem('admin_token');
-    token = '';
-  });
-}
 
 function doLogin() {
   var inputToken = document.getElementById('token-input').value.trim();
@@ -324,7 +301,6 @@ function doLogin() {
   }).then(function(r) { return r.json(); }).then(function(res) {
     if (res.success) {
       token = inputToken;
-      localStorage.setItem('admin_token', token);
       document.getElementById('login-wrap').style.display = 'none';
       document.getElementById('admin-wrap').style.display = 'block';
       document.getElementById('token-input').value = '';
@@ -339,6 +315,7 @@ function doLogin() {
 }
 
 function doLogout() {
+  // Clear any previously saved token
   localStorage.removeItem('admin_token');
   token = '';
   location.reload();
