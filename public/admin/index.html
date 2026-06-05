@@ -447,7 +447,11 @@ function loadWorks() {
 
 function deleteWork(id) {
   if (!confirm('确定删除这个作品？')) return;
-  apiDelete('/api/works', { id: id }).then(function() {
+  fetch(API_BASE + '/api/works', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token },
+    body: JSON.stringify({ id: id })
+  }).then(function(r) { return r.json(); }).then(function() {
     loadWorks();
   });
 }
@@ -502,7 +506,7 @@ function doUpload() {
     };
     fetch(API_BASE + '/api/works', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token },
       body: JSON.stringify(body)
     }).then(function(r) { return r.json(); }).then(function(res) {
       if (res.success) {
