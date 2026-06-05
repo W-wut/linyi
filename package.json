@@ -1,0 +1,15 @@
+{
+  "name": "linyi-designer-backend",
+  "version": "1.0.0",
+  "description": "林一室内设计个人网站后端",
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.0",
+    "resend": "^4.3.0"
+  },
+  "devDependencies": {
+    "vercel": "^54.9.1"
+  }
+}

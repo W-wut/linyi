@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "env": {
+    "SUPABASE_URL": "",
+    "SUPABASE_SERVICE_KEY": "",
+    "ADMIN_TOKEN": "",
+    "GUESTBOOK_ENABLED": "true"
+  },
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    }
+  ]
+}

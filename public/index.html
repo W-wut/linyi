@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>林一 · 室内设计师</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+/* ===== Reset & Base ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Noto Sans SC',sans-serif;color:#2c2c2c;background:#faf8f6;line-height:1.7}
+
+/* ===== Typography ===== */
+h1,h2,h3{font-family:'Noto Serif SC',serif;font-weight:600;line-height:1.3}
+.section-title{font-size:2rem;text-align:center;margin-bottom:3rem;position:relative}
+.section-title::after{content:'';display:block;width:50px;height:2px;background:#b8a088;margin:1rem auto 0}
+
+/* ===== Container ===== */
+.container{max-width:1120px;margin:0 auto;padding:0 24px}
+
+/* ===== Header / Nav ===== */
+header{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(250,248,246,.92);backdrop-filter:blur(10px);border-bottom:1px solid rgba(0,0,0,.05)}
+nav{display:flex;justify-content:space-between;align-items:center;height:68px}
+.logo{font-family:'Noto Serif SC',serif;font-size:1.25rem;font-weight:700;letter-spacing:1px;color:#2c2c2c;text-decoration:none}
+.logo span{color:#b8a088}
+.nav-links{display:flex;gap:2rem;list-style:none}
+.nav-links a{text-decoration:none;color:#555;font-size:.9rem;font-weight:500;transition:color .3s;letter-spacing:.5px}
+.nav-links a:hover{color:#b8a088}
+
+/* ===== Hero ===== */
+.hero{height:100vh;display:flex;align-items:center;position:relative;overflow:hidden}
+.hero-bg{position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#f0ebe5 0%,#e8dfd4 40%,#d4c9bc 100%)}
+.hero-bg::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23b8a088' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+.hero-content{position:relative;z-index:1;max-width:640px}
+.hero-subtitle{font-size:.85rem;letter-spacing:3px;color:#8a7a6a;margin-bottom:1rem}
+.hero h1{font-size:3.2rem;margin-bottom:1rem;color:#1a1a1a}
+.hero p{font-size:1.05rem;color:#666;margin-bottom:2.5rem;line-height:1.8}
+.btn{display:inline-block;padding:14px 40px;background:#2c2c2c;color:#fff;text-decoration:none;font-size:.9rem;font-weight:500;letter-spacing:1px;transition:all .3s;border:none;cursor:pointer}
+.btn:hover{background:#b8a088}
+.btn-outline{background:transparent;color:#2c2c2c;border:1px solid #2c2c2c;margin-left:12px}
+.btn-outline:hover{background:#2c2c2c;color:#fff}
+
+/* ===== About ===== */
+section{padding:100px 0}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.about-image{width:100%;aspect-ratio:3/4;background:#e8dfd4;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.about-image svg{width:80%;height:80%;opacity:.3}
+.about-text h3{font-size:1.4rem;margin-bottom:1rem;color:#1a1a1a}
+.about-text p{color:#666;margin-bottom:1rem;font-size:.95rem}
+.about-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:2.5rem;padding-top:2rem;border-top:1px solid #e8dfd4}
+.stat{text-align:center}
+.stat-number{font-family:'Noto Serif SC',serif;font-size:1.8rem;color:#b8a088;font-weight:700}
+.stat-label{font-size:.8rem;color:#888;margin-top:4px}
+
+/* ===== Philosophy ===== */
+.philosophy{background:#2c2c2c;color:#f0ebe5}
+.philosophy .section-title::after{background:#b8a088}
+.phi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:40px}
+.phi-card{text-align:center;padding:40px 20px}
+.phi-icon{width:56px;height:56px;margin:0 auto 1.5rem;background:rgba(255,255,255,.05);border-radius:50%;display:flex;align-items:center;justify-content:center}
+.phi-icon svg{width:24px;height:24px;stroke:#b8a088;fill:none;stroke-width:1.5}
+.phi-card h3{font-size:1.1rem;margin-bottom:.8rem;color:#fff}
+.phi-card p{font-size:.88rem;color:#a09888;line-height:1.7}
+
+/* ===== Portfolio ===== */
+.portfolio-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px}
+.project-card{position:relative;overflow:hidden;cursor:pointer;aspect-ratio:4/3;background:#e8dfd4;display:flex;align-items:center;justify-content:center}
+.project-card svg{position:absolute;width:60%;height:60%;opacity:.15}
+.project-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(to top,rgba(0,0,0,.7) 0%,rgba(0,0,0,.1) 60%);opacity:0;transition:opacity .4s;display:flex;flex-direction:column;justify-content:flex-end;padding:28px;pointer-events:none}
+.project-card:hover .project-overlay{opacity:1}
+.project-overlay h3{color:#fff;font-size:1.1rem;margin-bottom:4px}
+.project-overlay p{color:rgba(255,255,255,.7);font-size:.8rem}
+.project-tag{position:absolute;top:16px;left:16px;background:rgba(255,255,255,.9);padding:4px 14px;font-size:.72rem;color:#555;letter-spacing:.5px;z-index:2}
+
+/* ===== Carousel ===== */
+.carousel{position:relative;overflow:hidden;aspect-ratio:4/3}
+.carousel-slides{display:flex;width:100%;height:100%;transition:transform .5s ease}
+.carousel-slides img{width:100%;height:100%;object-fit:cover;flex-shrink:0;cursor:pointer}
+.carousel-btn{position:absolute;top:50%;transform:translateY(-50%);z-index:3;background:rgba(255,255,255,.8);border:none;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:1rem;color:#555;transition:all .3s;display:flex;align-items:center;justify-content:center}
+.carousel-btn:hover{background:#fff}
+.carousel-btn.prev{left:10px}
+.carousel-btn.next{right:10px}
+.carousel-dots{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);z-index:3;display:flex;gap:6px}
+.carousel-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.5);border:none;cursor:pointer;transition:all .3s}
+.carousel-dot.active{background:#fff;transform:scale(1.3)}
+
+/* ===== Lightbox ===== */
+.lightbox{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:rgba(0,0,0,.78);align-items:center;justify-content:center;flex-direction:column}
+.lightbox.show{display:flex}
+.lightbox-img-wrap{position:relative;display:flex;align-items:center;justify-content:center;width:100vw;height:100vh}
+.lightbox img{width:100vw;height:100vh;object-fit:contain;opacity:1;transition:opacity .25s;transform-origin:center center;cursor:grab}
+.lightbox img.switching{opacity:0}
+.lightbox img.zooming{transition:none;cursor:grabbing}
+.lightbox-close{position:absolute;top:20px;right:30px;font-size:2rem;color:#fff;cursor:pointer;z-index:10;background:none;border:none;line-height:1;text-shadow:0 1px 4px rgba(0,0,0,.5)}
+.lightbox-close:hover{color:#b8a088}
+.lightbox-caption{display:none}
+.lb-btn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.35);border:none;width:56px;height:100px;border-radius:4px;cursor:pointer;font-size:2rem;color:#fff;transition:all .3s;display:flex;align-items:center;justify-content:center;z-index:10}
+.lb-btn:hover{background:rgba(0,0,0,.55)}
+.lb-btn.prev{left:20px}
+.lb-btn.next{right:20px}
+@media(max-width:768px){
+  .lb-btn.prev{left:10px}
+  .lb-btn.next{right:10px}
+  .lb-btn{width:44px;height:72px;font-size:1.6rem}
+}
+
+/* ===== Services ===== */
+.services{background:#fff}
+.svc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:30px}
+.svc-card{padding:36px 28px;border:1px solid #eee;transition:all .3s}
+.svc-card:hover{border-color:#b8a088;transform:translateY(-4px);box-shadow:0 12px 30px rgba(0,0,0,.06)}
+.svc-card .num{font-family:'Noto Serif SC',serif;font-size:.8rem;color:#b8a088;letter-spacing:2px;margin-bottom:1rem}
+.svc-card h3{font-size:1.05rem;margin-bottom:.8rem}
+.svc-card p{font-size:.85rem;color:#888;line-height:1.7}
+
+/* ===== Testimonials ===== */
+.testi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:30px}
+.testi-card{background:#fff;padding:36px;border:1px solid #f0ebe5}
+.testi-card .stars{color:#b8a088;font-size:.9rem;margin-bottom:1rem;letter-spacing:2px}
+.testi-card blockquote{font-size:.92rem;color:#666;line-height:1.8;margin-bottom:1.5rem;font-style:italic}
+.testi-author{display:flex;align-items:center;gap:12px}
+.testi-avatar{width:44px;height:44px;border-radius:50%;background:#e8dfd4;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.testi-avatar svg{width:20px;height:20px;stroke:#b8a088;fill:none}
+.testi-author .name{font-size:.85rem;font-weight:500}
+.testi-author .role{font-size:.75rem;color:#999}
+
+/* ===== Contact ===== */
+.contact{background:linear-gradient(135deg,#2c2c2c,#1a1a1a);color:#f0ebe5}
+.contact .section-title::after{background:#b8a088}
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:50px}
+.contact-info h3{font-size:1.2rem;margin-bottom:1.5rem}
+.contact-info p{color:#a09888;font-size:.9rem;margin-bottom:.8rem;display:flex;align-items:center;gap:10px}
+.contact-info .label{color:#b8a088;min-width:60px}
+.contact-form input,.contact-form textarea{width:100%;padding:14px 16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#fff;font-family:inherit;font-size:.9rem;transition:border .3s;outline:none;margin-bottom:16px}
+.contact-form input:focus,.contact-form textarea:focus{border-color:#b8a088}
+.contact-form textarea{height:120px;resize:vertical}
+.contact-form .btn{width:100%}
+
+/* ===== Footer ===== */
+footer{background:#1a1a1a;color:#888;text-align:center;padding:32px 0;font-size:.8rem;border-top:1px solid rgba(255,255,255,.04)}
+footer .socials{display:flex;justify-content:center;gap:20px;margin-bottom:1rem}
+footer .socials a{color:#888;text-decoration:none;font-size:.85rem;transition:color .3s}
+footer .socials a:hover{color:#b8a088}
+
+/* ===== Responsive ===== */
+@media(max-width:768px){
+  .nav-links{display:none}
+  .hero h1{font-size:2rem}
+  .hero-content{text-align:center}
+  .btn{display:block;margin:0 auto}
+  .btn-outline{margin:12px auto 0}
+  .about-grid,.contact-grid{grid-template-columns:1fr}
+  .phi-grid,.svc-grid{grid-template-columns:1fr;gap:0}
+  .portfolio-grid{grid-template-columns:1fr}
+  .testi-grid{grid-template-columns:1fr}
+  section{padding:60px 0}
+  .about-stats{grid-template-columns:repeat(3,1fr);gap:10px}
+}
+
+/* Guestbook list grid */
+.gb-list-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+@media(max-width:768px){
+  .gb-list-grid{grid-template-columns:1fr;gap:16px}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== Nav ===== -->
+<header>
+  <nav class="container">
+    <a href="#" class="logo">林<span>一</span></a>
+    <ul class="nav-links">
+      <li><a href="#about">关于</a></li>
+      <li><a href="#portfolio">作品</a></li>
+      <li><a href="#services">服务</a></li>
+      <li><a href="#contact">联系</a></li>
+    </ul>
+  </nav>
+</header>
+
+<!-- ===== Hero ===== -->
+<section class="hero" id="home">
+  <div class="hero-bg"></div>
+  <div class="container hero-content">
+    <div class="hero-subtitle">INTERIOR DESIGNER</div>
+    <h1>用空间讲述<br />生活的故事</h1>
+    <p>每个空间都应当反映居住者的灵魂。<br />
+    我专注于创造既美观又宜居的室内环境，<br />
+    让设计与人的生活自然融合。</p>
+    <a href="#portfolio" class="btn">查看作品</a>
+    <a href="#contact" class="btn btn-outline">预约咨询</a>
+  </div>
+</section>
+
+<!-- ===== About ===== -->
+<section id="about">
+  <div class="container">
+    <h2 class="section-title">关于我</h2>
+    <div class="about-grid">
+      <div class="about-image">
+        <img id="about-photo" src="" alt="个人照片" style="width:100%;height:100%;object-fit:cover;display:none" />
+        <svg id="about-placeholder" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="30" y="20" width="140" height="160" rx="4" stroke="#b8a088" stroke-width="1.5"/>
+          <rect x="50" y="50" width="100" height="80" rx="2" stroke="#b8a088" stroke-width="1" stroke-dasharray="4 4"/>
+          <circle cx="100" cy="70" r="8" stroke="#b8a088" stroke-width="1.5"/>
+          <line x1="70" y1="100" x2="130" y2="100" stroke="#b8a088" stroke-width="1" stroke-dasharray="2 2"/>
+          <line x1="90" y1="100" x2="90" y2="130" stroke="#b8a088" stroke-width="1"/>
+          <line x1="110" y1="100" x2="110" y2="130" stroke="#b8a088" stroke-width="1"/>
+          <rect x="60" y="140" width="80" height="12" rx="2" stroke="#b8a088" stroke-width="1"/>
+          <rect x="70" y="160" width="20" height="15" rx="1" stroke="#b8a088" stroke-width="1"/>
+          <rect x="110" y="160" width="20" height="15" rx="1" stroke="#b8a088" stroke-width="1"/>
+        </svg>
+      </div>
+      <div class="about-text">
+        <h3>设计，是人与空间的对话</h3>
+        <p id="about-intro1">我是林一，一名常驻上海的独立室内设计师。从事室内设计 8 年来，我始终相信：好的设计不在繁复，而在恰到好处。</p>
+        <p id="about-intro2">从私宅到商业空间，我擅长在功能与美学之间寻找平衡点，让每个项目都拥有独一无二的性格。我的设计语言融合了东方留白美学与现代极简主义，注重材质质感和光影层次。</p>
+        <p id="about-intro3">每个项目我都亲自跟进——从概念设计到施工落地，确保每一处细节都忠于初心。</p>
+        <div class="about-stats">
+          <div class="stat"><div class="stat-number" id="about-stat-years">8+</div><div class="stat-label">年经验</div></div>
+          <div class="stat"><div class="stat-number" id="about-stat-projects">60+</div><div class="stat-label">落地项目</div></div>
+          <div class="stat"><div class="stat-number" id="about-stat-satisfaction">100%</div><div class="stat-label">客户好评</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Philosophy ===== -->
+<section class="philosophy">
+  <div class="container">
+    <h2 class="section-title">设计理念</h2>
+    <div class="phi-grid">
+      <div class="phi-card">
+        <div class="phi-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        </div>
+        <h3>慢设计</h3>
+        <p>不追赶潮流，每个项目都花足够的时间去理解居住者的生活习惯与深层需求。</p>
+      </div>
+      <div class="phi-card">
+        <div class="phi-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 3h7a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h7"/><path d="M12 3v18"/><path d="M8 9h8"/><path d="M8 13h6"/><path d="M8 17h4"/></svg>
+        </div>
+        <h3>留白美学</h3>
+        <p>好的空间需要呼吸感。用克制的手法为居住者的生活留出想象和变化的空间。</p>
+      </div>
+      <div class="phi-card">
+        <div class="phi-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <h3>材质为先</h3>
+        <p>真实的木材、粗粝的石材、温润的织物——用材质的对话取代多余的装饰。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Portfolio ===== -->
+<section id="portfolio">
+  <div class="container">
+    <h2 class="section-title">代表作品</h2>
+    <div id="portfolio-loading" style="text-align:center;color:#888;padding:40px;font-size:.85rem">加载中...</div>
+    <div class="portfolio-grid" id="portfolio-grid" style="display:none"></div>
+  </div>
+</section>
+
+<!-- ===== Services ===== -->
+<section class="services" id="services">
+  <div class="container">
+    <h2 class="section-title">服务内容</h2>
+    <div class="svc-grid">
+      <div class="svc-card">
+        <div class="num">01</div>
+        <h3>全案设计</h3>
+        <p>从空间规划、硬装设计到软装搭配的一站式服务。包含概念方案、施工图绘制、材料选样、家具订制、饰品采购及项目全程管理。</p>
+      </div>
+      <div class="svc-card">
+        <div class="num">02</div>
+        <h3>软装设计</h3>
+        <p>针对已有硬装的客户，提供家具、灯具、布艺、配饰等整体搭配方案，让空间焕然一新，同时保留原有的结构质感。</p>
+      </div>
+      <div class="svc-card">
+        <div class="num">03</div>
+        <h3>设计咨询</h3>
+        <p>如果你正在进行装修项目，需要专业建议，我提供按次/按小时的咨询服务——平面优化、配色建议、材料推荐，帮你避开设计误区。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Testimonials ===== -->
+<section>
+  <div class="container">
+    <h2 class="section-title">客户说</h2>
+    <div class="testi-grid">
+      <div class="testi-card">
+        <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <blockquote>"林一是我合作过最懂生活的设计师。她一眼就看出我家的痛点，重新规划后空间大了不止一倍，而且每个细节都恰到好处。"</blockquote>
+        <div class="testi-author">
+          <div class="testi-avatar">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          </div>
+          <div><div class="name">张女士</div><div class="role">私宅业主 · 上海</div></div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <blockquote>"我们的茶室项目找了好几个设计师都不满意，直到遇到林一。她对东方美学的理解很深，成品比效果图还打动人。"</blockquote>
+        <div class="testi-author">
+          <div class="testi-avatar">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          </div>
+          <div><div class="name">陈先生</div><div class="role">沏·茶空间 主理人</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Guestbook ===== -->
+<section style="background:#fff" id="guestbook">
+  <div class="container">
+    <h2 class="section-title">访客留言</h2>
+    <div id="gb-loading" style="text-align:center;color:#888;padding:20px;font-size:.85rem">加载中...</div>
+    <div id="gb-list" style="display:none"></div>
+    <div style="max-width:600px;margin:40px auto 0">
+      <div style="background:#faf8f6;padding:28px;border-radius:4px">
+        <h3 style="font-size:1rem;margin-bottom:16px;color:#2c2c2c">写一条留言</h3>
+        <input type="text" id="gb-name" placeholder="你的称呼" style="width:100%;padding:12px 14px;border:1px solid #e8dfd4;border-radius:4px;font-family:inherit;font-size:.9rem;margin-bottom:12px;outline:none" />
+        <textarea id="gb-content" placeholder="说点什么..." style="width:100%;padding:12px 14px;border:1px solid #e8dfd4;border-radius:4px;font-family:inherit;font-size:.9rem;height:80px;resize:vertical;margin-bottom:12px;outline:none"></textarea>
+        <button onclick="submitGuestbook()" class="btn" style="width:100%">提交留言</button>
+        <div id="gb-status" style="margin-top:10px;font-size:.85rem;min-height:20px"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Contact ===== -->
+<section class="contact" id="contact">
+  <div class="container">
+    <h2 class="section-title">预约咨询</h2>
+    <div class="contact-grid">
+      <div class="contact-info">
+        <h3>期待与你的空间对话</h3>
+        <p><span class="label">电话</span> 138-8888-8888</p>
+        <p><span class="label">邮箱</span> hello@linyi.design</p>
+        <p><span class="label">地址</span> 上海市静安区常熟路 88 号</p>
+        <p><span class="label">时间</span> 周一至周五 10:00 - 18:00</p>
+        <p style="margin-top:2rem;font-size:.85rem;color:#a09888">初次咨询免费（线上30分钟），欢迎先聊聊你的想法。</p>
+      </div>
+      <form class="contact-form" id="contact-form" onsubmit="submitContact(event)">
+        <input type="text" id="cf-name" placeholder="你的名字" required />
+        <input type="text" id="cf-email" placeholder="联系方式" required />
+        <input type="text" id="cf-type" placeholder="项目类型（私宅 / 商业 / 咨询）" />
+        <textarea id="cf-msg" placeholder="简单描述你的需求..." required></textarea>
+        <button type="submit" class="btn" id="cf-btn">发送留言</button>
+        <div id="cf-status" style="margin-top:12px;font-size:.85rem;min-height:20px"></div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Footer ===== -->
+<footer>
+  <div class="container">
+    <div class="socials">
+      <a href="#">微信公众号：林一设计</a>
+      <a href="#">小红书</a>
+      <a href="#">Instagram</a>
+    </div>
+    <p>&#169; <script>document.write(new Date().getFullYear())</script> 林一 · 室内设计 · All Rights Reserved</p>
+  </div>
+</footer>
+
+<!-- ===== Lightbox ===== -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="window.event?window.event.stopPropagation():null;closeLightbox()">&times;</button>
+  <div class="lightbox-img-wrap" onclick="window.event?window.event.stopPropagation():null">
+    <button class="lb-btn prev" onclick="lightboxPrev();window.event?window.event.stopPropagation():null">&#8249;</button>
+    <img src="" alt="" id="lightbox-img" />
+    <button class="lb-btn next" onclick="lightboxNext();window.event?window.event.stopPropagation():null">&#8250;</button>
+  </div>
+  <div class="lightbox-caption" id="lightbox-caption"></div>
+</div>
+
+<!-- ===== Carousel & Lightbox Script ===== -->
+<script>
+// Carousel (for portfolio cards with multiple images)
+var carouselState = {};
+function updateCarousel(id) {
+  var slides = document.getElementById(id);
+  var dots = document.getElementById(id + '-dots');
+  if (!slides || !dots) return;
+  var idx = carouselState[id] || 0;
+  var total = slides.children.length;
+  slides.style.transform = 'translateX(-' + (idx * 100) + '%)';
+  var allDots = dots.querySelectorAll('.carousel-dot');
+  for (var i = 0; i < allDots.length; i++) {
+    allDots[i].classList.toggle('active', i === idx);
+  }
+}
+function nextSlide(id) {
+  var slides = document.getElementById(id);
+  var total = slides ? slides.children.length : 1;
+  carouselState[id] = ((carouselState[id] || 0) + 1) % total;
+  updateCarousel(id);
+}
+function prevSlide(id) {
+  var slides = document.getElementById(id);
+  var total = slides ? slides.children.length : 1;
+  carouselState[id] = ((carouselState[id] || 0) - 1 + total) % total;
+  updateCarousel(id);
+}
+function goSlide(id, n) {
+  carouselState[id] = n;
+  updateCarousel(id);
+}
+
+// Lightbox
+var lbImages = [];
+var lbIndex = 0;
+var lbScale = 1;
+var lbTranslateX = 0;
+var lbTranslateY = 0;
+var lbDragging = false;
+var lbDragStartX = 0;
+var lbDragStartY = 0;
+
+function lbResetTransform() {
+  lbScale = 1;
+  lbTranslateX = 0;
+  lbTranslateY = 0;
+  lbApplyTransform();
+}
+
+function lbApplyTransform() {
+  var img = document.getElementById('lightbox-img');
+  if (!img) return;
+  img.style.transform = 'translate(' + lbTranslateX + 'px,' + lbTranslateY + 'px) scale(' + lbScale + ')';
+}
+
+function openLightbox(src, alt, carouselId, workId) {
+  var img = document.getElementById('lightbox-img');
+  var cap = document.getElementById('lightbox-caption');
+  var box = document.getElementById('lightbox');
+  if (!img || !box) return;
+
+  // Use global portfolioImages registry (from loadPortfolio)
+  if (workId && portfolioImages[workId] && portfolioImages[workId].length > 0) {
+    lbImages = portfolioImages[workId];
+    for (var j = 0; j < lbImages.length; j++) {
+      if (lbImages[j].src === src) { lbIndex = j; break; }
+    }
+  } else if (carouselId) {
+    // Fallback: collect from DOM carousel
+    var slides = document.getElementById(carouselId);
+    if (slides) {
+      var imgs = slides.querySelectorAll('img');
+      lbImages = [];
+      for (var i = 0; i < imgs.length; i++) {
+        lbImages.push({ src: imgs[i].getAttribute('src'), alt: imgs[i].getAttribute('alt') });
+      }
+      for (var k = 0; k < lbImages.length; k++) {
+        if (lbImages[k].src === src) { lbIndex = k; break; }
+      }
+    } else {
+      lbImages = [{ src: src, alt: alt }];
+      lbIndex = 0;
+    }
+  } else {
+    lbImages = [{ src: src, alt: alt }];
+    lbIndex = 0;
+  }
+
+  img.src = src;
+  if (cap) cap.textContent = alt || '';
+  box.classList.add('show');
+  document.body.style.overflow = 'hidden';
+  lbResetTransform();
+}
+
+function updateLightbox() {
+  var img = document.getElementById('lightbox-img');
+  var cap = document.getElementById('lightbox-caption');
+  if (!img || lbImages.length === 0) return;
+  img.classList.add('switching');
+  setTimeout(function() {
+    img.src = lbImages[lbIndex].src;
+    if (cap) cap.textContent = lbImages[lbIndex].alt || '';
+    img.classList.remove('switching');
+    lbResetTransform();
+  }, 250);
+}
+
+function lightboxNext() {
+  if (lbImages.length <= 1) return;
+  lbIndex = (lbIndex + 1) % lbImages.length;
+  updateLightbox();
+}
+function lightboxPrev() {
+  if (lbImages.length <= 1) return;
+  lbIndex = (lbIndex - 1 + lbImages.length) % lbImages.length;
+  updateLightbox();
+}
+
+function closeLightbox() {
+  var box = document.getElementById('lightbox');
+  if (box) box.classList.remove('show');
+  document.body.style.overflow = '';
+  lbImages = [];
+  lbIndex = 0;
+  lbResetTransform();
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowRight') lightboxNext();
+  if (e.key === 'ArrowLeft') lightboxPrev();
+});
+
+// Zoom & Pan
+document.addEventListener('DOMContentLoaded', function() {
+  var img = document.getElementById('lightbox-img');
+  if (!img) return;
+
+  // Wheel zoom
+  img.addEventListener('wheel', function(e) {
+    e.preventDefault();
+    var delta = e.deltaY > 0 ? -0.15 : 0.15;
+    var newScale = Math.max(1, Math.min(5, lbScale + delta));
+    lbScale = newScale;
+    if (lbScale <= 1) { lbTranslateX = 0; lbTranslateY = 0; }
+    lbApplyTransform();
+  }, { passive: false });
+
+  // Drag pan
+  img.addEventListener('mousedown', function(e) {
+    if (lbScale <= 1) return;
+    lbDragging = true;
+    lbDragStartX = e.clientX - lbTranslateX;
+    lbDragStartY = e.clientY - lbTranslateY;
+    img.classList.add('zooming');
+  });
+  document.addEventListener('mousemove', function(e) {
+    if (!lbDragging) return;
+    lbTranslateX = e.clientX - lbDragStartX;
+    lbTranslateY = e.clientY - lbDragStartY;
+    lbApplyTransform();
+  });
+  document.addEventListener('mouseup', function() {
+    lbDragging = false;
+    if (img) img.classList.remove('zooming');
+  });
+
+  // Double-click reset
+  img.addEventListener('dblclick', function(e) {
+    e.stopPropagation();
+    lbResetTransform();
+  });
+});
+
+// Prevent auto-scroll to hash on page load
+window.addEventListener('load', function() {
+  if (window.location.hash) {
+    window.scrollTo(0, 0);
+    history.replaceState(null, null, window.location.pathname + window.location.search);
+  }
+  // Check guestbook settings from API
+  fetch(API_BASE + '/api/settings').then(function(r) { return r.json(); }).then(function(res) {
+    if (res.guestbook_enabled) {
+      loadGuestbook();
+    } else {
+      var gb = document.getElementById('guestbook');
+      if (gb) gb.style.display = 'none';
+    }
+  }).catch(function() { loadGuestbook(); }); // fallback: show if API fails
+  loadPortfolio();
+  loadAbout();
+  loadContent();
+});
+
+// ===== Portfolio (dynamic) =====
+var portfolioImages = {}; // { workId: [{src, alt}, ...] }
+
+function loadPortfolio() {
+  fetch(API_BASE + '/api/works').then(function(r) { return r.json(); }).then(function(res) {
+    var loading = document.getElementById('portfolio-loading');
+    var grid = document.getElementById('portfolio-grid');
+    loading.style.display = 'none';
+    grid.style.display = 'grid';
+
+    if (!res.success || !res.data || res.data.length === 0) {
+      grid.innerHTML = '<div style="text-align:center;color:#999;padding:40px;font-size:.85rem;grid-column:1/-1">暂无作品展示</div>';
+      return;
+    }
+
+    var bgColors = ['#e8dfd4', '#cdc2b4', '#e1d6c9', '#d6cbbc', '#e5ddd0', '#c8bfb0'];
+    var html = '';
+    res.data.forEach(function(w, i) {
+      var bg = bgColors[i % bgColors.length];
+      var tag = escHtml(w.category || '') + (w.year ? ' · ' + escHtml(w.year) : '');
+      var desc = escHtml(w.tags || '') + (w.description ? ' · ' + escHtml(w.description) : '');
+      // Support both image_urls (new) and image_url (old)
+      var images = w.image_urls && w.image_urls.length > 0 ? w.image_urls : (w.image_url ? [w.image_url] : []);
+      var imgCount = images.length;
+      portfolioImages[w.id] = images.map(function(src) { return { src: src, alt: w.title }; });
+
+      var hasImage = imgCount > 0;
+      var cid = 'work-' + w.id;
+
+      html += '<div class="project-card carousel' + (imgCount > 1 ? '' : '') + '" style="background:' + bg + '"' + (hasImage ? '' : '') + '>';
+
+      if (tag) html += '<span class="project-tag">' + tag + '</span>';
+
+      if (hasImage) {
+        if (imgCount === 1) {
+          // Single image: simple click
+          html += '<img src="' + escAttr(images[0]) + '" alt="' + escAttr(w.title) + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0" onclick="openLightbox(\'' + escAttr(images[0]) + '\',\'' + escAttr(w.title) + '\',null,' + w.id + ');event.stopPropagation()" />';
+        } else {
+          // Multiple images: carousel
+          html += '<div class="carousel-slides" id="carousel-' + cid + '">';
+          images.forEach(function(src, j) {
+            html += '<img src="' + escAttr(src) + '" alt="' + escAttr(w.title) + '" loading="lazy" onclick="openLightbox(\'' + escAttr(src) + '\',\'' + escAttr(w.title) + '\',\'carousel-' + cid + '\',' + w.id + ');event.stopPropagation()" />';
+          });
+          html += '</div>';
+          html += '<button class="carousel-btn prev" style="top:50%;transform:translateY(-50%);left:8px" onclick="prevSlide(\'carousel-' + cid + '\');event.stopPropagation()">&#8249;</button>';
+          html += '<button class="carousel-btn next" style="top:50%;transform:translateY(-50%);right:8px" onclick="nextSlide(\'carousel-' + cid + '\');event.stopPropagation()">&#8250;</button>';
+          html += '<div class="carousel-dots" id="carousel-' + cid + '-dots">';
+          images.forEach(function(src, j) {
+            html += '<button class="carousel-dot' + (j === 0 ? ' active' : '') + '" onclick="goSlide(\'carousel-' + cid + '\',' + j + ');event.stopPropagation()"></button>';
+          });
+          html += '</div>';
+        }
+      } else {
+        html += '<svg viewBox="0 0 80 80" style="position:absolute;width:60%;height:60%;opacity:.15"><rect x="5" y="10" width="70" height="60" rx="2" stroke="#b8a088" stroke-width="1" fill="none"/><circle cx="40" cy="30" r="10" stroke="#b8a088" stroke-width="1" fill="none"/><rect x="20" y="50" width="40" height="15" rx="1" stroke="#b8a088" stroke-width="1" fill="none"/></svg>';
+      }
+
+      html += '<div class="project-overlay">';
+      html += '<h3>' + escHtml(w.title || '未命名') + '</h3>';
+      if (desc) html += '<p>' + desc + '</p>';
+      html += '</div>';
+      html += '</div>';
+    });
+    grid.innerHTML = html;
+  }).catch(function() {
+    document.getElementById('portfolio-loading').style.display = 'none';
+    document.getElementById('portfolio-grid').style.display = 'grid';
+    document.getElementById('portfolio-grid').innerHTML = '<div style="text-align:center;color:#999;padding:40px;font-size:.85rem;grid-column:1/-1">作品加载失败</div>';
+  });
+}
+
+function escAttr(s) {
+  return escHtml(s);
+}
+
+// ===== About (dynamic) =====
+function loadAbout() {
+  fetch(API_BASE + '/api/about').then(function(r) { return r.json(); }).then(function(res) {
+    if (!res.success || !res.data) return;
+    var d = res.data;
+
+    // Photo
+    var photo = document.getElementById('about-photo');
+    var placeholder = document.getElementById('about-placeholder');
+    if (d.image_url) {
+      photo.src = d.image_url;
+      photo.style.display = 'block';
+      if (placeholder) placeholder.style.display = 'none';
+    }
+
+    // Text
+    if (d.intro1) document.getElementById('about-intro1').textContent = d.intro1;
+    if (d.intro2) document.getElementById('about-intro2').textContent = d.intro2;
+    if (d.intro3) document.getElementById('about-intro3').textContent = d.intro3;
+
+    // Stats
+    if (d.stat_years) document.getElementById('about-stat-years').textContent = d.stat_years;
+    if (d.stat_projects) document.getElementById('about-stat-projects').textContent = d.stat_projects;
+    if (d.stat_satisfaction) document.getElementById('about-stat-satisfaction').textContent = d.stat_satisfaction;
+  }).catch(function() {});
+}
+
+// ===== Content (dynamic) =====
+function loadContent() {
+  fetch(API_BASE + '/api/content').then(function(r) { return r.json(); }).then(function(res) {
+    if (!res.success || !res.data) return;
+    var d = res.data;
+
+    // Hero
+    var heroSub = document.querySelector('.hero-subtitle');
+    if (heroSub && d.hero_subtitle) heroSub.textContent = d.hero_subtitle;
+    var heroH1 = document.querySelector('.hero h1');
+    if (heroH1 && d.hero_title) heroH1.innerHTML = d.hero_title;
+    var heroP = document.querySelector('.hero p');
+    if (heroP && d.hero_desc) heroP.innerHTML = d.hero_desc;
+
+    // About subtitle
+    if (d.about_subtitle) {
+      var abtH3 = document.querySelector('#about .about-text h3');
+      if (abtH3) abtH3.textContent = d.about_subtitle;
+    }
+
+    // Philosophy
+    if (d.phi_title1) { var el = document.querySelectorAll('.phi-card h3')[0]; if (el) el.textContent = d.phi_title1; }
+    if (d.phi_desc1) { var el = document.querySelectorAll('.phi-card p')[0]; if (el) el.textContent = d.phi_desc1; }
+    if (d.phi_title2) { var el = document.querySelectorAll('.phi-card h3')[1]; if (el) el.textContent = d.phi_title2; }
+    if (d.phi_desc2) { var el = document.querySelectorAll('.phi-card p')[1]; if (el) el.textContent = d.phi_desc2; }
+    if (d.phi_title3) { var el = document.querySelectorAll('.phi-card h3')[2]; if (el) el.textContent = d.phi_title3; }
+    if (d.phi_desc3) { var el = document.querySelectorAll('.phi-card p')[2]; if (el) el.textContent = d.phi_desc3; }
+
+    // Services
+    if (d.svc_title1) { var el = document.querySelectorAll('.svc-card h3')[0]; if (el) el.textContent = d.svc_title1; }
+    if (d.svc_desc1) { var el = document.querySelectorAll('.svc-card p')[0]; if (el) el.textContent = d.svc_desc1; }
+    if (d.svc_title2) { var el = document.querySelectorAll('.svc-card h3')[1]; if (el) el.textContent = d.svc_title2; }
+    if (d.svc_desc2) { var el = document.querySelectorAll('.svc-card p')[1]; if (el) el.textContent = d.svc_desc2; }
+    if (d.svc_title3) { var el = document.querySelectorAll('.svc-card h3')[2]; if (el) el.textContent = d.svc_title3; }
+    if (d.svc_desc3) { var el = document.querySelectorAll('.svc-card p')[2]; if (el) el.textContent = d.svc_desc3; }
+
+    // Contact
+    if (d.contact_intro) { var el = document.querySelector('.contact-info h3'); if (el) el.textContent = d.contact_intro; }
+    var cp = document.querySelectorAll('.contact-info p');
+    if (d.contact_phone && cp[0]) cp[0].innerHTML = '<span class="label">电话</span> ' + escHtml(d.contact_phone);
+    if (d.contact_email && cp[1]) cp[1].innerHTML = '<span class="label">邮箱</span> ' + escHtml(d.contact_email);
+    if (d.contact_address && cp[2]) cp[2].innerHTML = '<span class="label">地址</span> ' + escHtml(d.contact_address);
+    if (d.contact_hours && cp[3]) cp[3].innerHTML = '<span class="label">时间</span> ' + escHtml(d.contact_hours);
+    if (d.contact_note && cp[4]) cp[4].textContent = d.contact_note;
+
+    // Footer
+    var socs = document.querySelector('.socials');
+    if (socs && d.footer_wechat) { socs.querySelectorAll('a')[0].textContent = d.footer_wechat; }
+    if (socs && d.footer_xhs) { socs.querySelectorAll('a')[1].textContent = d.footer_xhs; }
+    if (socs && d.footer_ig) { socs.querySelectorAll('a')[2].textContent = d.footer_ig; }
+    var fp = document.querySelector('footer p');
+    if (fp && d.footer_copyright) fp.textContent = d.footer_copyright;
+  }).catch(function() {});
+}
+
+// ===== Contact Form =====
+var API_BASE = window.location.origin;
+
+function submitContact(e) {
+  e.preventDefault();
+  var btn = document.getElementById('cf-btn');
+  var status = document.getElementById('cf-status');
+  var name = document.getElementById('cf-name').value.trim();
+  var email = document.getElementById('cf-email').value.trim();
+  var type = document.getElementById('cf-type').value.trim();
+  var msg = document.getElementById('cf-msg').value.trim();
+
+  if (!name || !email || !msg) {
+    status.innerHTML = '<span style="color:#c0392b">请填写必填项</span>';
+    return;
+  }
+
+  btn.textContent = '提交中...';
+  btn.disabled = true;
+
+  fetch(API_BASE + '/api/contact', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: name, email: email, project_type: type, message: msg })
+  }).then(function(r) { return r.json(); }).then(function(res) {
+    btn.textContent = '发送留言';
+    btn.disabled = false;
+    if (res.success) {
+      status.innerHTML = '<span style="color:#27ae60">' + res.message + '</span>';
+      document.getElementById('cf-name').value = '';
+      document.getElementById('cf-email').value = '';
+      document.getElementById('cf-type').value = '';
+      document.getElementById('cf-msg').value = '';
+    } else {
+      status.innerHTML = '<span style="color:#c0392b">' + (res.error || '提交失败') + '</span>';
+    }
+  }).catch(function() {
+    btn.textContent = '发送留言';
+    btn.disabled = false;
+    status.innerHTML = '<span style="color:#c0392b">网络错误，请重试</span>';
+  });
+}
+
+// ===== Guestbook =====
+function loadGuestbook() {
+  fetch(API_BASE + '/api/messages').then(function(r) { return r.json(); }).then(function(res) {
+    var loading = document.getElementById('gb-loading');
+    var list = document.getElementById('gb-list');
+    loading.style.display = 'none';
+    list.style.display = 'block';
+
+    if (!res.success || !res.data || res.data.length === 0) {
+      list.innerHTML = '<div style="text-align:center;color:#999;padding:20px;font-size:.85rem">暂无留言，来做第一个访客吧</div>';
+      return;
+    }
+
+    var html = '<div class="gb-list-grid">';
+
+    res.data.forEach(function(m) {
+      var date = new Date(m.created_at);
+      var dateStr = date.getFullYear() + '-' + pad2(date.getMonth()+1) + '-' + pad2(date.getDate());
+      html += '<div style="background:#faf8f6;padding:20px;border-radius:4px">';
+      html += '<div style="font-size:.85rem;color:#888;margin-bottom:8px">' + escHtml(m.name) + ' · ' + dateStr + '</div>';
+      html += '<div style="font-size:.9rem;color:#555;line-height:1.6">' + escHtml(m.content) + '</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+    list.innerHTML = html;
+  }).catch(function() {
+    document.getElementById('gb-loading').style.display = 'none';
+    document.getElementById('gb-list').style.display = 'block';
+    document.getElementById('gb-list').innerHTML = '<div style="text-align:center;color:#999;padding:20px;font-size:.85rem">留言加载失败</div>';
+  });
+}
+
+function submitGuestbook() {
+  var status = document.getElementById('gb-status');
+  var name = document.getElementById('gb-name').value.trim();
+  var content = document.getElementById('gb-content').value.trim();
+
+  if (!name || !content) {
+    status.innerHTML = '<span style="color:#c0392b">请填写称呼和内容</span>';
+    return;
+  }
+
+  fetch(API_BASE + '/api/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: name, content: content })
+  }).then(function(r) { return r.json(); }).then(function(res) {
+    if (res.success) {
+      status.innerHTML = '<span style="color:#27ae60">留言成功！</span>';
+      document.getElementById('gb-name').value = '';
+      document.getElementById('gb-content').value = '';
+      loadGuestbook();
+    } else {
+      status.innerHTML = '<span style="color:#c0392b">' + (res.error || '提交失败') + '</span>';
+    }
+  }).catch(function() {
+    status.innerHTML = '<span style="color:#c0392b">网络错误，请重试</span>';
+  });
+}
+
+function pad2(n) { return n < 10 ? '0' + n : n; }
+function escHtml(s) {
+  if (!s) return '';
+  return s.toString().replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,76 @@
+{
+  "works": [
+    {
+      "id": 1,
+      "title": "光影之间 · 私宅",
+      "category": "私宅",
+      "year": "2024",
+      "tags": "原木 白墙 光影",
+      "description": "120㎡",
+      "image_urls": [
+        "assets/images/img_01.jpg",
+        "assets/images/img_02.jpg",
+        "assets/images/img_03.jpg",
+        "assets/images/img_04.jpg"
+      ],
+      "sort_order": 0
+    }
+  ],
+  "messages": [
+    {
+      "id": 1,
+      "name": "访客A",
+      "content": "网站做得很漂亮！",
+      "created_at": "2026-06-05T00:32:05.777Z",
+      "visible": true
+    },
+    {
+      "id": 2,
+      "name": "访客B",
+      "content": "期待看到更多作品",
+      "created_at": "2026-06-04T00:32:05.778Z",
+      "visible": true
+    }
+  ],
+  "contacts": [],
+  "settings": {
+    "guestbook_enabled": true
+  },
+  "about": {
+    "image_url": "",
+    "intro1": "我是林一，一名常驻上海的独立室内设计师。从事室内设计 8 年来，我始终相信：好的设计不在繁复，而在恰到好处。",
+    "intro2": "从私宅到商业空间，我擅长在功能与美学之间寻找平衡点，让每个项目都拥有独一无二的性格。我的设计语言融合了东方留白美学与现代极简主义，注重材质质感和光影层次。",
+    "intro3": "每个项目我都亲自跟进——从概念设计到施工落地，确保每一处细节都忠于初心。",
+    "stat_years": "8+",
+    "stat_projects": "60+",
+    "stat_satisfaction": "100%"
+  },
+  "content": {
+    "hero_subtitle": "INTERIOR DESIGNER",
+    "hero_title": "用空间讲述<br />生活的故事",
+    "hero_desc": "每个空间都应当反映居住者的灵魂。<br />我专注于创造既美观又宜居的室内环境，<br />让设计与人的生活自然融合。",
+    "about_subtitle": "设计，是人与空间的对话",
+    "phi_title1": "慢设计",
+    "phi_desc1": "不追赶潮流，每个项目都花足够的时间去理解居住者的生活习惯与深层需求。",
+    "phi_title2": "留白美学",
+    "phi_desc2": "好的空间需要呼吸感。用克制的手法为居住者的生活留出想象和变化的空间。",
+    "phi_title3": "材质为先",
+    "phi_desc3": "真实的木材、粗粝的石材、温润的织物——用材质的对话取代多余的装饰。",
+    "svc_title1": "全案设计",
+    "svc_desc1": "从空间规划、硬装设计到软装搭配的一站式服务。包含概念方案、施工图绘制、材料选样、家具订制、饰品采购及项目全程管理。",
+    "svc_title2": "软装设计",
+    "svc_desc2": "针对已有硬装的客户，提供家具、灯具、布艺、配饰等整体搭配方案，让空间焕然一新。",
+    "svc_title3": "设计咨询",
+    "svc_desc3": "如果你正在进行装修项目，需要专业建议，我提供按次/按小时的咨询服务——平面优化、配色建议、材料推荐。",
+    "contact_intro": "期待与你的空间对话",
+    "contact_phone": "138-8888-8888",
+    "contact_email": "hello@linyi.design",
+    "contact_address": "上海市静安区常熟路 88 号",
+    "contact_hours": "周一至周五 10:00 - 18:00",
+    "contact_note": "初次咨询免费（线上30分钟），欢迎先聊聊你的想法。",
+    "footer_wechat": "微信公众号：林一设计",
+    "footer_xhs": "小红书",
+    "footer_ig": "Instagram",
+    "footer_copyright": "© 2025 林一 · 室内设计 · All Rights Reserved"
+  }
+}
