@@ -3,9 +3,14 @@ const { createClient } = require('@supabase/supabase-js');
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Token',
   'Content-Type': 'application/json'
 };
+
+function checkAuth(req) {
+  const token = req.headers?.['x-admin-token'];
+  return token === process.env.ADMIN_TOKEN;
+}
 
 module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') {
@@ -50,6 +55,11 @@ module.exports = async function handler(req, res) {
 
     // POST - create work (supports multiple base64 image uploads)
     if (req.method === 'POST') {
+      if (!checkAuth(req)) {
+        res.writeHead(401, corsHeaders);
+        res.end(JSON.stringify({ error: '未授权访问' }));
+        return;
+      }
       const body = req.body || {};
 
       // Collect all image base64 data
@@ -113,6 +123,11 @@ module.exports = async function handler(req, res) {
 
     // DELETE - remove work
     if (req.method === 'DELETE') {
+      if (!checkAuth(req)) {
+        res.writeHead(401, corsHeaders);
+        res.end(JSON.stringify({ error: '未授权访问' }));
+        return;
+      }
       const { id } = req.body || {};
 
       if (!id) {

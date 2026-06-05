@@ -71,12 +71,47 @@ CREATE TABLE about (
   intro3 text DEFAULT '',
   stat_years text DEFAULT '',
   stat_projects text DEFAULT '',
-  stat_satisfaction text DEFAULT ''
+  stat_satisfaction text DEFAULT '',
+  guestbook_enabled boolean DEFAULT true
 );
 
--- 插入默认数据
-INSERT INTO about (id, intro1, intro2, intro3, stat_years, stat_projects, stat_satisfaction)
-VALUES (1, '我是林一，一名常驻上海的独立室内设计师...', '', '', '8+', '60+', '100%');
+-- 插入默认"关于我"数据
+INSERT INTO about (id, intro1, intro2, intro3, stat_years, stat_projects, stat_satisfaction, guestbook_enabled)
+VALUES (1, '我是林一，一名常驻上海的独立室内设计师...', '', '', '8+', '60+', '100%', true);
+
+-- 5. 全站内容表
+CREATE TABLE content (
+  id serial PRIMARY KEY,
+  hero_subtitle text DEFAULT '',
+  hero_title text DEFAULT '',
+  hero_desc text DEFAULT '',
+  about_subtitle text DEFAULT '',
+  phi_title1 text DEFAULT '',
+  phi_desc1 text DEFAULT '',
+  phi_title2 text DEFAULT '',
+  phi_desc2 text DEFAULT '',
+  phi_title3 text DEFAULT '',
+  phi_desc3 text DEFAULT '',
+  svc_title1 text DEFAULT '',
+  svc_desc1 text DEFAULT '',
+  svc_title2 text DEFAULT '',
+  svc_desc2 text DEFAULT '',
+  svc_title3 text DEFAULT '',
+  svc_desc3 text DEFAULT '',
+  contact_intro text DEFAULT '',
+  contact_phone text DEFAULT '',
+  contact_email text DEFAULT '',
+  contact_address text DEFAULT '',
+  contact_hours text DEFAULT '',
+  contact_note text DEFAULT '',
+  footer_wechat text DEFAULT '',
+  footer_xhs text DEFAULT '',
+  footer_ig text DEFAULT '',
+  footer_copyright text DEFAULT ''
+);
+
+-- 插入默认内容数据
+INSERT INTO content (id) VALUES (1);
 ```
 
 ### 创建 Storage 存储桶
