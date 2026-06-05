@@ -8,10 +8,10 @@
       "tags": "原木 白墙 光影",
       "description": "120㎡",
       "image_urls": [
-        "assets/images/img_01.jpg",
-        "assets/images/img_02.jpg",
-        "assets/images/img_03.jpg",
-        "assets/images/img_04.jpg"
+        "/assets/images/img_01.jpg",
+        "/assets/images/img_02.jpg",
+        "/assets/images/img_03.jpg",
+        "/assets/images/img_04.jpg"
       ],
       "sort_order": 0
     }

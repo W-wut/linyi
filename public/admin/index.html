@@ -69,9 +69,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans SC',sans
 .alert.success{background:#e8f5e9;color:#2e7d32}
 .alert.error{background:#ffebee;color:#c62828}
 
-/* Edit Modal */
-.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:999;align-items:center;justify-content:center}
-.modal-overlay.show{display:flex}
+/* Upload Preview Grid */
+.upload-preview-grid{display:none;flex-wrap:wrap;gap:12px;margin-top:16px}
+.upload-preview-grid.show{display:flex}
+.upload-preview-item{position:relative;width:120px;height:120px;border:2px solid #ddd;border-radius:6px;overflow:hidden;cursor:grab;transition:border-color .2s,transform .2s}
+.upload-preview-item:active{cursor:grabbing}
+.upload-preview-item:hover{border-color:#b8a088}
+.upload-preview-item.dragging{opacity:0.5;transform:scale(0.95)}
+.upload-preview-item.drag-over{border-color:#b8a088;border-style:solid;background:#faf8f6}
+.upload-preview-item img{width:100%;height:100%;object-fit:cover}
+.upload-preview-item .preview-index{position:absolute;top:4px;left:4px;background:rgba(0,0,0,0.7);color:#fff;font-size:10px;padding:2px 6px;border-radius:10px}
+.upload-preview-item .preview-remove{position:absolute;top:4px;right:4px;width:22px;height:22px;background:rgba(200,20,20,0.8);color:#fff;border:none;border-radius:50%;cursor:pointer;font-size:12px;line-height:22px;text-align:center;padding:0}
+.upload-preview-item .preview-remove:hover{background:#c62828}
 
 </style>
 </head>
@@ -169,6 +178,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans SC',sans
             <p id="upload-hint">点击选择图片，或拖拽图片到此处（可多选）</p>
           </div>
           <input type="file" id="w-file" accept="image/*" multiple style="display:none" onchange="handleFileSelect(this)" />
+          <div class="upload-preview-grid" id="upload-preview-grid"></div>
         </div>
         <div class="form-row">
           <button onclick="doUpload()">上传作品</button>
@@ -464,11 +474,75 @@ function handleFileSelect(input) {
   if (selectedFiles.length === 0) {
     area.classList.remove('has-file');
     hint.textContent = '点击选择图片，或拖拽图片到此处（可多选）';
+    document.getElementById('upload-preview-grid').classList.remove('show');
+    document.getElementById('upload-preview-grid').innerHTML = '';
     return;
   }
   area.classList.add('has-file');
-  var names = selectedFiles.map(function(f) { return f.name; }).join(', ');
-  hint.textContent = '已选择 ' + selectedFiles.length + ' 张：' + names;
+  hint.textContent = '已选择 ' + selectedFiles.length + ' 张图片（拖拽可调整顺序，叉号可删除）';
+  renderUploadPreviews();
+}
+
+function renderUploadPreviews() {
+  var grid = document.getElementById('upload-preview-grid');
+  var html = '';
+  selectedFiles.forEach(function(file, i) {
+    var url = URL.createObjectURL(file);
+    html += '<div class="upload-preview-item" draggable="true" data-index="' + i + '" ondragstart="onUploadDragStart(event)" ondragover="onUploadDragOver(event)" ondragleave="onUploadDragLeave(event)" ondrop="onUploadDrop(event)">';
+    html += '<span class="preview-index">' + (i + 1) + '</span>';
+    html += '<button class="preview-remove" onclick="event.stopPropagation();removeUploadPreview(' + i + ')" title="删除此图片">&times;</button>';
+    html += '<img src="' + url + '" alt="' + file.name + '" />';
+    html += '</div>';
+  });
+  grid.innerHTML = html;
+  grid.classList.add('show');
+}
+
+var dragIndex = -1;
+
+function onUploadDragStart(e) {
+  dragIndex = parseInt(e.target.closest('.upload-preview-item').dataset.index);
+  e.target.closest('.upload-preview-item').classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function onUploadDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  e.target.closest('.upload-preview-item').classList.add('drag-over');
+}
+
+function onUploadDragLeave(e) {
+  e.target.closest('.upload-preview-item').classList.remove('drag-over');
+}
+
+function onUploadDrop(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  var targetItem = e.target.closest('.upload-preview-item');
+  targetItem.classList.remove('drag-over');
+  var targetIndex = parseInt(targetItem.dataset.index);
+  if (dragIndex === targetIndex) return;
+  // Reorder the files array
+  var moved = selectedFiles.splice(dragIndex, 1)[0];
+  selectedFiles.splice(targetIndex, 0, moved);
+  document.querySelectorAll('.upload-preview-item.dragging').forEach(function(el) { el.classList.remove('dragging'); });
+  renderUploadPreviews();
+}
+
+function removeUploadPreview(index) {
+  selectedFiles.splice(index, 1);
+  var area = document.getElementById('upload-area');
+  var hint = document.getElementById('upload-hint');
+  if (selectedFiles.length === 0) {
+    area.classList.remove('has-file');
+    hint.textContent = '点击选择图片，或拖拽图片到此处（可多选）';
+    document.getElementById('upload-preview-grid').classList.remove('show');
+    document.getElementById('upload-preview-grid').innerHTML = '';
+  } else {
+    hint.textContent = '已选择 ' + selectedFiles.length + ' 张图片（拖拽可调整顺序，叉号可删除）';
+    renderUploadPreviews();
+  }
 }
 
 function doUpload() {
@@ -480,13 +554,19 @@ function doUpload() {
 
   msgEl.innerHTML = '<div class="alert" style="background:#fff3e0;color:#e65100">上传中... 0/' + selectedFiles.length + '</div>';
 
-  // Read all files as base64
+  // Read all files as base64 (使用 push + sort 避免稀疏数组问题)
   var total = selectedFiles.length;
   var results = [];
   var done = 0;
+  var hasError = false;
 
   function tryFinish() {
     if (done < total) return;
+    if (hasError) return;
+
+    // 按原始索引排序，保证图片顺序正确
+    results.sort(function(a, b) { return a.index - b.index; });
+
     var body = {
       title: document.getElementById('w-title').value || '未命名作品',
       category: document.getElementById('w-category').value,
@@ -513,22 +593,29 @@ function doUpload() {
         var area = document.getElementById('upload-area');
         area.classList.remove('has-file');
         document.getElementById('upload-hint').textContent = '点击选择图片，或拖拽图片到此处（可多选）';
+        document.getElementById('upload-preview-grid').classList.remove('show');
+        document.getElementById('upload-preview-grid').innerHTML = '';
         loadWorks();
       } else {
         msgEl.innerHTML = '<div class="alert error">上传失败：' + (res.error || '未知错误') + '</div>';
       }
     }).catch(function() {
-      msgEl.innerHTML = '<div class="alert error">网络错误</div>';
+      msgEl.innerHTML = '<div class="alert error">网络错误，请检查图片大小是否超过限制</div>';
     });
   }
 
   selectedFiles.forEach(function(file, i) {
     var reader = new FileReader();
     reader.onload = function(e) {
-      results[i] = { name: file.name, data: e.target.result };
+      results.push({ name: file.name, data: e.target.result, index: i });
       done++;
       msgEl.innerHTML = '<div class="alert" style="background:#fff3e0;color:#e65100">上传中... ' + done + '/' + total + '</div>';
       tryFinish();
+    };
+    reader.onerror = function() {
+      done++;
+      hasError = true;
+      msgEl.innerHTML = '<div class="alert error">文件读取失败：' + file.name + '</div>';
     };
     reader.readAsDataURL(file);
   });

@@ -12,6 +12,24 @@ function checkAuth(req) {
   return token === process.env.ADMIN_TOKEN;
 }
 
+// Parse request body safely
+// Vercel auto-parses JSON body into req.body, but large payloads may fail
+function getBody(req) {
+  // If Vercel already parsed the body, use it directly
+  if (req.body && typeof req.body === 'object') {
+    return req.body;
+  }
+  // Return empty object if body wasn't parsed (e.g. payload too large)
+  console.error('Body not parsed - payload may exceed size limit');
+  return {};
+}
+
+// Extract MIME type from base64 data URL
+function getMimeType(dataUrl) {
+  const match = dataUrl.match(/^data:(image\/\w+);base64,/);
+  return match ? match[1] : 'image/jpeg';
+}
+
 module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     res.writeHead(200, corsHeaders);
@@ -60,25 +78,34 @@ module.exports = async function handler(req, res) {
         res.end(JSON.stringify({ error: '未授权访问' }));
         return;
       }
-      const body = req.body || {};
+
+      const body = getBody(req);
 
       // Collect all image base64 data
       const imageBases = body.image_base64s || (body.image_base64 ? [body.image_base64] : []);
       const filenames = body.image_filenames || (body.image_filename ? [body.image_filename] : []);
 
+      if (!Array.isArray(imageBases) || imageBases.length === 0) {
+        res.writeHead(400, corsHeaders);
+        res.end(JSON.stringify({ error: '未收到图片数据，请检查图片大小是否超过限制' }));
+        return;
+      }
+
       // Upload each image to Supabase Storage
       const image_urls = [];
       for (let i = 0; i < imageBases.length; i++) {
+        const mimeType = getMimeType(imageBases[i]);
+        const ext = mimeType.split('/')[1] || 'jpg';
         const base64Data = imageBases[i].replace(/^data:image\/\w+;base64,/, '');
         const buffer = Buffer.from(base64Data, 'base64');
         const rawName = (filenames[i] || 'image_' + i).replace(/[^a-zA-Z0-9.-]/g, '_');
-        const filename = Date.now() + '_' + i + '_' + rawName;
+        const filename = Date.now() + '_' + i + '_' + rawName + '.' + ext;
 
         const { data: uploadData, error: uploadError } = await supabase
           .storage
           .from('works')
           .upload(filename, buffer, {
-            contentType: 'image/jpeg',
+            contentType: mimeType,
             upsert: false
           });
 
@@ -97,7 +124,7 @@ module.exports = async function handler(req, res) {
 
       if (image_urls.length === 0) {
         res.writeHead(400, corsHeaders);
-        res.end(JSON.stringify({ error: '图片上传失败' }));
+        res.end(JSON.stringify({ error: '图片上传失败，请检查 Supabase Storage 配置' }));
         return;
       }
 

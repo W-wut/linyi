@@ -142,7 +142,7 @@ async function handleApi(reqPath, req, res) {
 const MOCK_FILE = path.join(__dirname, '..', 'mock-data.json');
 
 const defaultWorks = [
-  { id: 1, title: '光影之间 · 私宅', category: '私宅', year: '2024', tags: '原木 白墙 光影', description: '120㎡', image_urls: ['assets/images/img_01.jpg', 'assets/images/img_02.jpg', 'assets/images/img_03.jpg', 'assets/images/img_04.jpg'], sort_order: 0 },
+  { id: 1, title: '光影之间 · 私宅', category: '私宅', year: '2024', tags: '原木 白墙 光影', description: '120㎡', image_urls: ['/assets/images/img_01.jpg', '/assets/images/img_02.jpg', '/assets/images/img_03.jpg', '/assets/images/img_04.jpg'], sort_order: 0 },
   { id: 2, title: '沏 · 茶空间', category: '商业', year: '2023', tags: '新中式 茶室', description: '', image_urls: [], sort_order: 1 }
 ];
 const defaultMessages = [
