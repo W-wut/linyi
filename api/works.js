@@ -127,8 +127,8 @@ module.exports = async function handler(req, res) {
         return;
       }
 
-      // Save work record with image URL array as JSON string
-      const { error: dbError } = await supabase
+      // First insert work record to get ID for folder name
+      const { data: insertData, error: insertError } = await supabase
         .from('works')
         .insert([{
           title: body.title || '未命名作品',
@@ -136,10 +136,65 @@ module.exports = async function handler(req, res) {
           year: body.year || '',
           tags: body.tags || '',
           description: body.description || '',
-          image_urls: JSON.stringify(image_urls)
-        }]);
+          image_urls: JSON.stringify([])
+        }])
+        .select('id');
 
-      if (dbError) throw dbError;
+      if (insertError) throw insertError;
+      const workId = insertData[0]?.id;
+      if (!workId) {
+        res.writeHead(500, corsHeaders);
+        res.end(JSON.stringify({ error: '无法获取作品ID' }));
+        return;
+      }
+
+      // Create folder name using work ID and title
+      const folderName = workId + '_' + (body.title || 'untitled').replace(/[^a-zA-Z0-9\u4e00-\u9fa5_-]/g, '_').substring(0, 20);
+
+      // Upload each image to Supabase Storage in a dedicated folder
+      const image_urls = [];
+      for (let i = 0; i < imageBases.length; i++) {
+        const mimeType = getMimeType(imageBases[i]);
+        const ext = mimeType.split('/')[1] || 'jpg';
+        const base64Data = imageBases[i].replace(/^data:image\/\w+;base64,/, '');
+        const buffer = Buffer.from(base64Data, 'base64');
+        const rawName = (filenames[i] || 'image_' + i).replace(/[^a-zA-Z0-9.-]/g, '_');
+        const filename = folderName + '/' + Date.now() + '_' + i + '_' + rawName + '.' + ext;
+
+        const { data: uploadData, error: uploadError } = await supabase
+          .storage
+          .from('works')
+          .upload(filename, buffer, {
+            contentType: mimeType,
+            upsert: false
+          });
+
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          continue;
+        }
+
+        const { data: urlData } = supabase
+          .storage
+          .from('works')
+          .getPublicUrl(filename);
+
+        image_urls.push(urlData.publicUrl);
+      }
+
+      if (image_urls.length === 0) {
+        res.writeHead(400, corsHeaders);
+        res.end(JSON.stringify({ error: '图片上传失败，请检查 Supabase Storage 配置' }));
+        return;
+      }
+
+      // Update work record with actual image URLs
+      const { error: updateError } = await supabase
+        .from('works')
+        .update({ image_urls: JSON.stringify(image_urls) })
+        .eq('id', workId);
+
+      if (updateError) throw updateError;
 
       res.writeHead(200, corsHeaders);
       res.end(JSON.stringify({ success: true, image_urls }));
