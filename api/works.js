@@ -90,43 +90,6 @@ module.exports = async function handler(req, res) {
         return;
       }
 
-      // Upload each image to Supabase Storage
-      const image_urls = [];
-      for (let i = 0; i < imageBases.length; i++) {
-        const mimeType = getMimeType(imageBases[i]);
-        const ext = mimeType.split('/')[1] || 'jpg';
-        const base64Data = imageBases[i].replace(/^data:image\/\w+;base64,/, '');
-        const buffer = Buffer.from(base64Data, 'base64');
-        const rawName = (filenames[i] || 'image_' + i).replace(/[^a-zA-Z0-9.-]/g, '_');
-        const filename = Date.now() + '_' + i + '_' + rawName + '.' + ext;
-
-        const { data: uploadData, error: uploadError } = await supabase
-          .storage
-          .from('works')
-          .upload(filename, buffer, {
-            contentType: mimeType,
-            upsert: false
-          });
-
-        if (uploadError) {
-          console.error('Upload error:', uploadError);
-          continue;
-        }
-
-        const { data: urlData } = supabase
-          .storage
-          .from('works')
-          .getPublicUrl(filename);
-
-        image_urls.push(urlData.publicUrl);
-      }
-
-      if (image_urls.length === 0) {
-        res.writeHead(400, corsHeaders);
-        res.end(JSON.stringify({ error: '图片上传失败，请检查 Supabase Storage 配置' }));
-        return;
-      }
-
       // First insert work record to get ID for folder name
       const { data: insertData, error: insertError } = await supabase
         .from('works')
