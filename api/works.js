@@ -116,6 +116,7 @@ module.exports = async function handler(req, res) {
 
       // Upload each image to Supabase Storage in a dedicated folder
       const image_urls = [];
+      const uploadErrors = [];
       for (let i = 0; i < imageBases.length; i++) {
         const mimeType = getMimeType(imageBases[i]);
         const ext = mimeType.split('/')[1] || 'jpg';
@@ -133,7 +134,8 @@ module.exports = async function handler(req, res) {
           });
 
         if (uploadError) {
-          console.error('Upload error:', uploadError);
+          console.error('Upload error for ' + filename + ':', uploadError);
+          uploadErrors.push({ index: i, filename: filename, error: uploadError.message || 'Unknown error' });
           continue;
         }
 
@@ -147,7 +149,8 @@ module.exports = async function handler(req, res) {
 
       if (image_urls.length === 0) {
         res.writeHead(400, corsHeaders);
-        res.end(JSON.stringify({ error: '图片上传失败，请检查 Supabase Storage 配置' }));
+        const errorMsg = uploadErrors.length > 0 ? '图片上传失败: ' + uploadErrors.map(e => e.error).join(', ') : '图片上传失败，请检查 Supabase Storage 配置';
+        res.end(JSON.stringify({ error: errorMsg }));
         return;
       }
 
