@@ -528,42 +528,71 @@ document.addEventListener('keydown', function(e) {
 // Zoom & Pan
 document.addEventListener('DOMContentLoaded', function() {
   var img = document.getElementById('lightbox-img');
-  if (!img) return;
+  if (img) {
+    // Wheel zoom
+    img.addEventListener('wheel', function(e) {
+      e.preventDefault();
+      var delta = e.deltaY > 0 ? -0.15 : 0.15;
+      var newScale = Math.max(1, Math.min(5, lbScale + delta));
+      lbScale = newScale;
+      if (lbScale <= 1) { lbTranslateX = 0; lbTranslateY = 0; }
+      lbApplyTransform();
+    }, { passive: false });
 
-  // Wheel zoom
-  img.addEventListener('wheel', function(e) {
-    e.preventDefault();
-    var delta = e.deltaY > 0 ? -0.15 : 0.15;
-    var newScale = Math.max(1, Math.min(5, lbScale + delta));
-    lbScale = newScale;
-    if (lbScale <= 1) { lbTranslateX = 0; lbTranslateY = 0; }
-    lbApplyTransform();
-  }, { passive: false });
+    // Drag pan
+    img.addEventListener('mousedown', function(e) {
+      if (lbScale <= 1) return;
+      lbDragging = true;
+      lbDragStartX = e.clientX - lbTranslateX;
+      lbDragStartY = e.clientY - lbTranslateY;
+      img.classList.add('zooming');
+    });
+    document.addEventListener('mousemove', function(e) {
+      if (!lbDragging) return;
+      lbTranslateX = e.clientX - lbDragStartX;
+      lbTranslateY = e.clientY - lbDragStartY;
+      lbApplyTransform();
+    });
+    document.addEventListener('mouseup', function() {
+      lbDragging = false;
+      if (img) img.classList.remove('zooming');
+    });
 
-  // Drag pan
-  img.addEventListener('mousedown', function(e) {
-    if (lbScale <= 1) return;
-    lbDragging = true;
-    lbDragStartX = e.clientX - lbTranslateX;
-    lbDragStartY = e.clientY - lbTranslateY;
-    img.classList.add('zooming');
-  });
-  document.addEventListener('mousemove', function(e) {
-    if (!lbDragging) return;
-    lbTranslateX = e.clientX - lbDragStartX;
-    lbTranslateY = e.clientY - lbDragStartY;
-    lbApplyTransform();
-  });
-  document.addEventListener('mouseup', function() {
-    lbDragging = false;
-    if (img) img.classList.remove('zooming');
-  });
+    // Double-click reset
+    img.addEventListener('dblclick', function(e) {
+      e.stopPropagation();
+      lbResetTransform();
+    });
+  }
 
-  // Double-click reset
-  img.addEventListener('dblclick', function(e) {
-    e.stopPropagation();
-    lbResetTransform();
-  });
+  // Portfolio 区域滚轮手动滚动
+  var pWrap = document.getElementById('portfolio-wrap');
+  if (pWrap) {
+    pWrap.addEventListener('wheel', function(e) {
+      var grid = document.getElementById('portfolio-grid');
+      if (!grid) return;
+      if (grid.offsetHeight <= pWrap.clientHeight) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      isScrolling = false;
+      clearTimeout(window._portfolioScrollResume);
+
+      var multiplier = 2.5;
+      scrollY += e.deltaY * multiplier;
+
+      var maxScroll = grid.offsetHeight - pWrap.clientHeight;
+      if (scrollY < 0) scrollY = 0;
+      if (scrollY > maxScroll) scrollY = maxScroll;
+
+      grid.style.transform = 'translateY(-' + scrollY + 'px)';
+
+      window._portfolioScrollResume = setTimeout(function() {
+        isScrolling = true;
+      }, 2000);
+    }, { passive: false });
+  }
 });
 
 // Prevent auto-scroll to hash on page load
