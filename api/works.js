@@ -186,13 +186,27 @@ module.exports = async function handler(req, res) {
       const deletedUrls = body.deleted_urls || [];
       const urlsToDelete = [];
       for (const url of deletedUrls) {
-        if (url && url.includes('/storage/v1/object/public/works/')) {
-          const path = url.split('/storage/v1/object/public/works/')[1];
-          if (path) urlsToDelete.push(path);
+        if (!url) continue;
+        // Try multiple URL patterns to extract file path
+        let path = null;
+        if (url.includes('/storage/v1/object/public/works/')) {
+          path = url.split('/storage/v1/object/public/works/')[1];
+        } else if (url.includes('/works/')) {
+          // Alternative pattern: /works/filename
+          const match = url.match(/\/works\/([^\/\?#]+)/);
+          if (match) path = match[1];
+        }
+        if (path) {
+          // Decode URL encoded characters
+          path = decodeURIComponent(path);
+          urlsToDelete.push(path);
         }
       }
       if (urlsToDelete.length > 0) {
-        await supabase.storage.from('works').remove(urlsToDelete);
+        const { error: storageError } = await supabase.storage.from('works').remove(urlsToDelete);
+        if (storageError) {
+          console.error('Failed to delete images from storage:', storageError);
+        }
       }
 
       // Process new images
@@ -294,13 +308,25 @@ module.exports = async function handler(req, res) {
       // Delete all images from storage
       const pathsToRemove = [];
       for (const url of urlsToDelete) {
-        if (url && url.includes('/storage/v1/object/public/works/')) {
-          const path = url.split('/storage/v1/object/public/works/')[1];
-          if (path) pathsToRemove.push(path);
+        if (!url) continue;
+        // Try multiple URL patterns to extract file path
+        let path = null;
+        if (url.includes('/storage/v1/object/public/works/')) {
+          path = url.split('/storage/v1/object/public/works/')[1];
+        } else if (url.includes('/works/')) {
+          const match = url.match(/\/works\/([^\/\?#]+)/);
+          if (match) path = match[1];
+        }
+        if (path) {
+          path = decodeURIComponent(path);
+          pathsToRemove.push(path);
         }
       }
       if (pathsToRemove.length > 0) {
-        await supabase.storage.from('works').remove(pathsToRemove);
+        const { error: storageError } = await supabase.storage.from('works').remove(pathsToRemove);
+        if (storageError) {
+          console.error('Failed to delete images from storage:', storageError);
+        }
       }
 
       const { error } = await supabase
