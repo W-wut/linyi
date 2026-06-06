@@ -65,7 +65,7 @@ section{padding:100px 0}
 .phi-card p{font-size:.88rem;color:#a09888;line-height:1.7}
 
 /* ===== Portfolio ===== */
-.portfolio-wrap{overflow:hidden;position:relative}
+.portfolio-wrap{overflow:hidden;position:relative;height:600px}
 .portfolio-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;transition:transform .1s linear}
 .project-card{position:relative;overflow:hidden;cursor:pointer;aspect-ratio:4/3;background:#e8dfd4;display:flex;align-items:center;justify-content:center}
 .project-card svg{position:absolute;width:60%;height:60%;opacity:.15}
@@ -653,7 +653,8 @@ function loadPortfolio() {
       html += '</div>';
       html += '</div>';
     });
-    grid.innerHTML = html;
+    // 复制一份内容，确保有足够的高度来滚动
+    grid.innerHTML = html + html;
 
     // 开始滚动
     startPortfolioScroll();
@@ -672,7 +673,7 @@ function startPortfolioScroll() {
     var grid = document.getElementById('portfolio-grid');
     if (!grid) return;
     scrollY += scrollSpeed;
-    var gridHeight = grid.scrollHeight;
+    var gridHeight = grid.offsetHeight;
     var wrapHeight = grid.parentElement.clientHeight;
     if (scrollY >= gridHeight - wrapHeight) {
       scrollY = 0;
