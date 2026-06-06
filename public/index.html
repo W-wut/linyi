@@ -653,11 +653,16 @@ function loadPortfolio() {
       html += '</div>';
       html += '</div>';
     });
-    // 复制一份内容，确保有足够的高度来滚动
-    grid.innerHTML = html + html;
+    grid.innerHTML = html;
 
-    // 开始滚动
-    startPortfolioScroll();
+    // 检查内容高度，如果超过容器高度才开始滚动
+    setTimeout(function() {
+      var gridHeight = grid.offsetHeight;
+      var wrapHeight = grid.parentElement.clientHeight;
+      if (gridHeight > wrapHeight) {
+        startPortfolioScroll();
+      }
+    }, 100);
   }).catch(function() {
     document.getElementById('portfolio-loading').style.display = 'none';
     document.getElementById('portfolio-wrap').style.display = 'block';
