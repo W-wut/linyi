@@ -48,6 +48,7 @@ module.exports = async function handler(req, res) {
       const { data, error } = await supabase
         .from('works')
         .select('*')
+        .order('sort_order', { ascending: true, nullsFirst: false })
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -154,6 +155,18 @@ module.exports = async function handler(req, res) {
         return;
       }
 
+      // Get max sort order
+      const { data: maxData, error: maxError } = await supabase
+        .from('works')
+        .select('sort_order')
+        .order('sort_order', { ascending: false })
+        .limit(1);
+      
+      let nextSortOrder = 1;
+      if (maxData && maxData.length > 0 && maxData[0].sort_order !== null) {
+        nextSortOrder = maxData[0].sort_order + 1;
+      }
+
       // Save work record
       const { error: insertError } = await supabase
         .from('works')
@@ -163,7 +176,8 @@ module.exports = async function handler(req, res) {
           year: body.year || '',
           tags: body.tags || '',
           description: body.description || '',
-          image_urls: JSON.stringify(image_urls)
+          image_urls: JSON.stringify(image_urls),
+          sort_order: nextSortOrder
         }]);
 
       if (insertError) throw insertError;
@@ -181,6 +195,23 @@ module.exports = async function handler(req, res) {
         return;
       }
       const body = getBody(req);
+      
+      // Bulk update sort order
+      if (body.action === 'update_order' && body.works) {
+        for (const item of body.works) {
+          if (item.id !== undefined && item.sort_order !== undefined) {
+            const { error: updateErr } = await supabase
+              .from('works')
+              .update({ sort_order: item.sort_order })
+              .eq('id', item.id);
+            if (updateErr) throw updateErr;
+          }
+        }
+        res.writeHead(200, corsHeaders);
+        res.end(JSON.stringify({ success: true }));
+        return;
+      }
+
       const { id } = body || {};
 
       if (!id) {
