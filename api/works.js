@@ -139,7 +139,7 @@ module.exports = async function handler(req, res) {
           year: body.year || '',
           tags: body.tags || '',
           description: body.description || '',
-          image_urls: JSON.stringify(image_urls)
+          image_url: JSON.stringify(image_urls)
         }]);
 
       if (insertError) throw insertError;
@@ -176,10 +176,19 @@ module.exports = async function handler(req, res) {
 
       // Get existing images
       let existingUrls = [];
-      if (existingWork?.image_urls) {
-        try { existingUrls = JSON.parse(existingWork.image_urls); } catch(e) { existingUrls = []; }
-      } else if (existingWork?.image_url) {
-        existingUrls = [existingWork.image_url];
+      if (existingWork?.image_url) {
+        // Try to parse if it's a JSON array, otherwise use as single URL
+        try {
+          const parsed = JSON.parse(existingWork.image_url);
+          if (Array.isArray(parsed)) {
+            existingUrls = parsed;
+          } else {
+            existingUrls = [existingWork.image_url];
+          }
+        } catch(e) {
+          // Not JSON, use as single URL
+          existingUrls = [existingWork.image_url];
+        }
       }
 
       // Process deleted images
@@ -299,7 +308,7 @@ module.exports = async function handler(req, res) {
           year: body.year || existingWork.year,
           tags: body.tags || existingWork.tags,
           description: body.description || existingWork.description,
-          image_urls: JSON.stringify(finalUrls)
+          image_url: JSON.stringify(finalUrls)
         })
         .eq('id', id);
 
@@ -332,7 +341,7 @@ module.exports = async function handler(req, res) {
       // Get image URLs first
       const { data: work, error: queryError } = await supabase
         .from('works')
-        .select('image_urls,image_url')
+        .select('image_url')
         .eq('id', id)
         .single();
 
@@ -341,24 +350,23 @@ module.exports = async function handler(req, res) {
       
       // Collect all image URLs to delete
       let urlsToDelete = [];
-      if (work?.image_urls) {
-        console.log('DEBUG - DELETE works - raw image_urls:', work.image_urls);
-        try { 
-          urlsToDelete = JSON.parse(work.image_urls); 
-          console.log('DEBUG - DELETE works - parsed image_urls:', urlsToDelete);
-        } catch(e) { 
-          urlsToDelete = []; 
-          console.log('DEBUG - DELETE works - JSON parse error:', e);
+      if (work?.image_url) {
+        // Try to parse if it's a JSON array, otherwise use as single URL
+        try {
+          const parsed = JSON.parse(work.image_url);
+          if (Array.isArray(parsed)) {
+            urlsToDelete = parsed;
+          } else {
+            urlsToDelete = [work.image_url];
+          }
+        } catch(e) {
+          // Not JSON, use as single URL
+          urlsToDelete = [work.image_url];
         }
       }
-      // Backward compatibility
-      if (urlsToDelete.length === 0 && work?.image_url) {
-        urlsToDelete = [work.image_url];
-        console.log('DEBUG - DELETE works - using fallback image_url:', urlsToDelete);
-      }
+      console.log('DEBUG - DELETE works - image URLs to process:', urlsToDelete);
 
       // Delete all images from storage
-      console.log('DEBUG - DELETE works - image URLs to process:', urlsToDelete);
       const pathsToRemove = [];
       for (const url of urlsToDelete) {
         if (!url) continue;
