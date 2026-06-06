@@ -1,4 +1,5 @@
 const { createClient } = require('@supabase/supabase-js');
+const https = require('https');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -6,6 +7,57 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type',
   'Content-Type': 'application/json'
 };
+
+// 企业微信机器人通知
+function notifyWecom(type, data) {
+  const webhook = process.env.WECOM_WEBHOOK;
+  if (!webhook) return;
+
+  const now = new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' });
+  let markdown = '';
+
+  if (type === 'contact') {
+    markdown = '**【林一设计】新咨询留言**\n' +
+      '> 姓名：<font color="info">' + (data.name || '-') + '</font>\n' +
+      '> 联系方式：<font color="info">' + (data.email || '-') + '</font>\n' +
+      '> 项目类型：<font color="comment">' + (data.project_type || '未填写') + '</font>\n' +
+      '> 留言内容：' + (data.message || '-') + '\n' +
+      '> 时间：' + now;
+  } else if (type === 'message') {
+    markdown = '**【林一设计】新访客留言**\n' +
+      '> 称呼：<font color="info">' + (data.name || '-') + '</font>\n' +
+      '> 内容：' + (data.content || '-') + '\n' +
+      '> 时间：' + now;
+  }
+
+  const postData = JSON.stringify({
+    msgtype: 'markdown',
+    markdown: { content: markdown }
+  });
+
+  const url = new URL(webhook);
+  const options = {
+    hostname: url.hostname,
+    path: url.pathname + url.search,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' }
+  };
+
+  const wecomReq = https.request(options, (wecomRes) => {
+    let body = '';
+    wecomRes.on('data', (chunk) => { body += chunk; });
+    wecomRes.on('end', () => {
+      try {
+        const ret = JSON.parse(body);
+        if (ret.errcode === 0) console.log('[WECOM] 通知发送成功: ' + type);
+        else console.log('[WECOM] 通知发送失败:', ret.errmsg);
+      } catch(e) {}
+    });
+  });
+  wecomReq.on('error', (e) => { console.log('[WECOM] 通知发送失败:', e.message); });
+  wecomReq.write(postData);
+  wecomReq.end();
+}
 
 module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') {
@@ -50,6 +102,9 @@ module.exports = async function handler(req, res) {
         .insert([{ name, content }]);
 
       if (error) throw error;
+
+      // 企业微信机器人通知
+      notifyWecom('message', { name, content });
 
       res.writeHead(200, corsHeaders);
       res.end(JSON.stringify({ success: true, message: '留言成功' }));
