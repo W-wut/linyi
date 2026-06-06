@@ -208,7 +208,8 @@ module.exports = async function handler(req, res) {
         res.end(JSON.stringify({ error: '未授权访问' }));
         return;
       }
-      const { id } = req.body || {};
+      const body = getBody(req);
+      const { id } = body || {};
 
       if (!id) {
         res.writeHead(400, corsHeaders);
