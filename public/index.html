@@ -592,7 +592,6 @@ var scrollY = 0;
 var scrollSpeed = 0.5; // 滚动速度
 var isScrolling = true;
 var scrollInterval = null;
-var allWorksData = [];
 
 function loadPortfolio() {
   fetch(API_BASE + '/api/works').then(function(r) { return r.json(); }).then(function(res) {
@@ -607,22 +606,19 @@ function loadPortfolio() {
       return;
     }
 
-    allWorksData = res.data.concat(res.data); // 复制一份实现无限滚动
     var bgColors = ['#e8dfd4', '#cdc2b4', '#e1d6c9', '#d6cbbc', '#e5ddd0', '#c8bfb0'];
     var html = '';
-    allWorksData.forEach(function(w, i) {
-      var originalIndex = i % res.data.length;
-      var originalWork = res.data[originalIndex];
-      var bg = bgColors[originalIndex % bgColors.length];
-      var tag = escHtml(originalWork.category || '') + (originalWork.year ? ' · ' + escHtml(originalWork.year) : '');
-      var desc = escHtml(originalWork.tags || '') + (originalWork.description ? ' · ' + escHtml(originalWork.description) : '');
+    res.data.forEach(function(w, i) {
+      var bg = bgColors[i % bgColors.length];
+      var tag = escHtml(w.category || '') + (w.year ? ' · ' + escHtml(w.year) : '');
+      var desc = escHtml(w.tags || '') + (w.description ? ' · ' + escHtml(w.description) : '');
       // Support both image_urls (new) and image_url (old)
-      var images = originalWork.image_urls && originalWork.image_urls.length > 0 ? originalWork.image_urls : (originalWork.image_url ? [originalWork.image_url] : []);
+      var images = w.image_urls && w.image_urls.length > 0 ? w.image_urls : (w.image_url ? [w.image_url] : []);
       var imgCount = images.length;
-      portfolioImages[originalWork.id] = images.map(function(src) { return { src: src, alt: originalWork.title }; });
+      portfolioImages[w.id] = images.map(function(src) { return { src: src, alt: w.title }; });
 
       var hasImage = imgCount > 0;
-      var cid = 'work-' + originalWork.id + '-' + i;
+      var cid = 'work-' + w.id;
 
       html += '<div class="project-card carousel' + (imgCount > 1 ? '' : '') + '" style="background:' + bg + '"' + (hasImage ? '' : '') + '>';
 
@@ -631,12 +627,12 @@ function loadPortfolio() {
       if (hasImage) {
         if (imgCount === 1) {
           // Single image: simple click
-          html += '<img src="' + escAttr(images[0]) + '" alt="' + escAttr(originalWork.title) + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0" onclick="openLightbox(\'' + escAttr(images[0]) + '\',\'' + escAttr(originalWork.title) + '\',null,' + originalWork.id + ');event.stopPropagation();stopPortfolioScroll()" />';
+          html += '<img src="' + escAttr(images[0]) + '" alt="' + escAttr(w.title) + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0" onclick="openLightbox(\'' + escAttr(images[0]) + '\',\'' + escAttr(w.title) + '\',null,' + w.id + ');event.stopPropagation();stopPortfolioScroll()" />';
         } else {
           // Multiple images: carousel
           html += '<div class="carousel-slides" id="carousel-' + cid + '">';
           images.forEach(function(src, j) {
-            html += '<img src="' + escAttr(src) + '" alt="' + escAttr(originalWork.title) + '" loading="lazy" onclick="openLightbox(\'' + escAttr(src) + '\',\'' + escAttr(originalWork.title) + '\',\'carousel-' + cid + '\',' + originalWork.id + ');event.stopPropagation();stopPortfolioScroll()" />';
+            html += '<img src="' + escAttr(src) + '" alt="' + escAttr(w.title) + '" loading="lazy" onclick="openLightbox(\'' + escAttr(src) + '\',\'' + escAttr(w.title) + '\',\'carousel-' + cid + '\',' + w.id + ');event.stopPropagation();stopPortfolioScroll()" />';
           });
           html += '</div>';
           html += '<button class="carousel-btn prev" style="top:50%;transform:translateY(-50%);left:8px" onclick="prevSlide(\'carousel-' + cid + '\');event.stopPropagation();stopPortfolioScroll()">&#8249;</button>';
@@ -652,7 +648,7 @@ function loadPortfolio() {
       }
 
       html += '<div class="project-overlay" onclick="stopPortfolioScroll()">';
-      html += '<h3>' + escHtml(originalWork.title || '未命名') + '</h3>';
+      html += '<h3>' + escHtml(w.title || '未命名') + '</h3>';
       if (desc) html += '<p>' + desc + '</p>';
       html += '</div>';
       html += '</div>';
@@ -676,8 +672,9 @@ function startPortfolioScroll() {
     var grid = document.getElementById('portfolio-grid');
     if (!grid) return;
     scrollY += scrollSpeed;
-    var halfHeight = grid.scrollHeight / 2;
-    if (scrollY >= halfHeight) {
+    var gridHeight = grid.scrollHeight;
+    var wrapHeight = grid.parentElement.clientHeight;
+    if (scrollY >= gridHeight - wrapHeight) {
       scrollY = 0;
     }
     grid.style.transform = 'translateY(-' + scrollY + 'px)';
