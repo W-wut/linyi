@@ -80,9 +80,14 @@ module.exports = async function handler(req, res) {
 
       const body = getBody(req);
 
+      console.log('DEBUG - POST works - body:', body);
+      
       // Collect all image base64 data
       const imageBases = body.image_base64s || (body.image_base64 ? [body.image_base64] : []);
       const filenames = body.image_filenames || (body.image_filename ? [body.image_filename] : []);
+
+      console.log('DEBUG - POST works - imageBases count:', imageBases?.length);
+      console.log('DEBUG - POST works - filenames count:', filenames?.length);
 
       if (!Array.isArray(imageBases) || imageBases.length === 0) {
         res.writeHead(400, corsHeaders);
