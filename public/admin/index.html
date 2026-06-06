@@ -169,10 +169,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans SC',sans
           <textarea id="w-desc" placeholder="简短描述"></textarea>
         </div>
         <div class="form-row">
-          <label>排序（数字越小越靠前）</label>
-          <input type="number" id="w-order" value="0" />
-        </div>
-        <div class="form-row">
           <label>作品图片（最多9张）</label>
           <div class="upload-area" id="upload-area" onclick="document.getElementById('w-file').click()">
             <p id="upload-hint">点击选择图片，或拖拽图片到此处（可多选）</p>
@@ -573,7 +569,6 @@ function doUpload() {
       year: document.getElementById('w-year').value,
       tags: document.getElementById('w-tags').value,
       description: document.getElementById('w-desc').value,
-      sort_order: parseInt(document.getElementById('w-order').value) || 0,
       image_base64s: results.map(function(r) { return r.data; }),
       image_filenames: results.map(function(r) { return r.name; })
     };

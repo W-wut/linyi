@@ -48,7 +48,6 @@ module.exports = async function handler(req, res) {
       const { data, error } = await supabase
         .from('works')
         .select('*')
-        .order('sort_order', { ascending: true })
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -137,8 +136,7 @@ module.exports = async function handler(req, res) {
           year: body.year || '',
           tags: body.tags || '',
           description: body.description || '',
-          image_urls: JSON.stringify(image_urls),
-          sort_order: body.sort_order || 0
+          image_urls: JSON.stringify(image_urls)
         }]);
 
       if (dbError) throw dbError;
