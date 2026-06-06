@@ -52,15 +52,22 @@ module.exports = async function handler(req, res) {
 
       if (error) throw error;
 
-      // Parse image_urls from JSON string to array
+      // Parse image_url from JSON string to array
       const works = (data || []).map(w => {
         let urls = [];
-        if (w.image_urls) {
-          try { urls = JSON.parse(w.image_urls); } catch(e) { urls = []; }
-        }
-        // Backward compatibility: if image_url exists but image_urls doesn't
-        if (urls.length === 0 && w.image_url) {
-          urls = [w.image_url];
+        if (w.image_url) {
+          // Try to parse if it's a JSON array, otherwise use as single URL
+          try {
+            const parsed = JSON.parse(w.image_url);
+            if (Array.isArray(parsed)) {
+              urls = parsed;
+            } else {
+              urls = [w.image_url];
+            }
+          } catch(e) {
+            // Not JSON, use as single URL
+            urls = [w.image_url];
+          }
         }
         return { ...w, image_urls: urls };
       });
@@ -78,13 +85,25 @@ module.exports = async function handler(req, res) {
         return;
       }
 
+      console.log('DEBUG - POST works - step 1: start');
+      
       const body = getBody(req);
-
-      console.log('DEBUG - POST works - body:', body);
+      
+      console.log('DEBUG - POST works - step 2: body parsed');
+      console.log('DEBUG - POST works - body keys:', Object.keys(body || {}));
       
       // Collect all image base64 data
-      const imageBases = body.image_base64s || (body.image_base64 ? [body.image_base64] : []);
-      const filenames = body.image_filenames || (body.image_filename ? [body.image_filename] : []);
+      let imageBases = [];
+      let filenames = [];
+      
+      try {
+        imageBases = body.image_base64s || (body.image_base64 ? [body.image_base64] : []);
+        filenames = body.image_filenames || (body.image_filename ? [body.image_filename] : []);
+        console.log('DEBUG - POST works - step 3: image data collected');
+      } catch (err) {
+        console.error('DEBUG - POST works - error collecting image data:', err);
+        throw err;
+      }
 
       console.log('DEBUG - POST works - imageBases count:', imageBases?.length);
       console.log('DEBUG - POST works - filenames count:', filenames?.length);
