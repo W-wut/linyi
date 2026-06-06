@@ -123,21 +123,21 @@ module.exports = async function handler(req, res) {
 
       if (error) throw error;
 
-      // Parse image_url from JSON string to array
+      // Parse image_urls from JSON string to array
       const works = (data || []).map(w => {
         let urls = [];
-        if (w.image_url) {
+        if (w.image_urls) {
           // Try to parse if it's a JSON array, otherwise use as single URL
           try {
-            const parsed = JSON.parse(w.image_url);
+            const parsed = JSON.parse(w.image_urls);
             if (Array.isArray(parsed)) {
               urls = parsed;
             } else {
-              urls = [w.image_url];
+              urls = [w.image_urls];
             }
           } catch(e) {
             // Not JSON, use as single URL
-            urls = [w.image_url];
+            urls = [w.image_urls];
           }
         }
         return { ...w, image_urls: urls };

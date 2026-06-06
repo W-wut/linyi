@@ -52,21 +52,21 @@ module.exports = async function handler(req, res) {
 
       if (error) throw error;
 
-      // Parse image_url from JSON string to array
+      // Parse image_urls from JSON string to array
       const works = (data || []).map(w => {
         let urls = [];
-        if (w.image_url) {
+        if (w.image_urls) {
           // Try to parse if it's a JSON array, otherwise use as single URL
           try {
-            const parsed = JSON.parse(w.image_url);
+            const parsed = JSON.parse(w.image_urls);
             if (Array.isArray(parsed)) {
               urls = parsed;
             } else {
-              urls = [w.image_url];
+              urls = [w.image_urls];
             }
           } catch(e) {
             // Not JSON, use as single URL
-            urls = [w.image_url];
+            urls = [w.image_urls];
           }
         }
         return { ...w, image_urls: urls };
@@ -163,7 +163,7 @@ module.exports = async function handler(req, res) {
           year: body.year || '',
           tags: body.tags || '',
           description: body.description || '',
-          image_url: JSON.stringify(image_urls)
+          image_urls: JSON.stringify(image_urls)
         }]);
 
       if (insertError) throw insertError;
@@ -200,18 +200,18 @@ module.exports = async function handler(req, res) {
 
       // Get existing images
       let existingUrls = [];
-      if (existingWork?.image_url) {
+      if (existingWork?.image_urls) {
         // Try to parse if it's a JSON array, otherwise use as single URL
         try {
-          const parsed = JSON.parse(existingWork.image_url);
+          const parsed = JSON.parse(existingWork.image_urls);
           if (Array.isArray(parsed)) {
             existingUrls = parsed;
           } else {
-            existingUrls = [existingWork.image_url];
+            existingUrls = [existingWork.image_urls];
           }
         } catch(e) {
           // Not JSON, use as single URL
-          existingUrls = [existingWork.image_url];
+          existingUrls = [existingWork.image_urls];
         }
       }
 
@@ -332,7 +332,7 @@ module.exports = async function handler(req, res) {
           year: body.year || existingWork.year,
           tags: body.tags || existingWork.tags,
           description: body.description || existingWork.description,
-          image_url: JSON.stringify(finalUrls)
+          image_urls: JSON.stringify(finalUrls)
         })
         .eq('id', id);
 
@@ -365,7 +365,7 @@ module.exports = async function handler(req, res) {
       // Get image URLs first
       const { data: work, error: queryError } = await supabase
         .from('works')
-        .select('image_url')
+        .select('image_urls')
         .eq('id', id)
         .single();
 
@@ -374,18 +374,18 @@ module.exports = async function handler(req, res) {
       
       // Collect all image URLs to delete
       let urlsToDelete = [];
-      if (work?.image_url) {
+      if (work?.image_urls) {
         // Try to parse if it's a JSON array, otherwise use as single URL
         try {
-          const parsed = JSON.parse(work.image_url);
+          const parsed = JSON.parse(work.image_urls);
           if (Array.isArray(parsed)) {
             urlsToDelete = parsed;
           } else {
-            urlsToDelete = [work.image_url];
+            urlsToDelete = [work.image_urls];
           }
         } catch(e) {
           // Not JSON, use as single URL
-          urlsToDelete = [work.image_url];
+          urlsToDelete = [work.image_urls];
         }
       }
       console.log('DEBUG - DELETE works - image URLs to process:', urlsToDelete);
