@@ -119,7 +119,6 @@ module.exports = async function handler(req, res) {
       const { data, error } = await supabase
         .from('works')
         .select('*')
-        .order('sort_order', { ascending: true })
         .order('created_at', { ascending: false });
 
       if (error) throw error;
