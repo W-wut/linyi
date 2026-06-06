@@ -82,6 +82,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans SC',sans
 .upload-preview-item .preview-remove{position:absolute;top:4px;right:4px;width:22px;height:22px;background:rgba(200,20,20,0.8);color:#fff;border:none;border-radius:50%;cursor:pointer;font-size:12px;line-height:22px;text-align:center;padding:0}
 .upload-preview-item .preview-remove:hover{background:#c62828}
 
+/* Sort Controls */
+.sort-controls{display:flex;gap:16px;align-items:center;margin-bottom:16px}
+.sort-controls label{font-size:.8rem;color:#888}
+.sort-controls select{padding:8px 12px;border:1px solid #ddd;border-radius:4px;font-size:.85rem}
+
+/* Edit Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:1000}
+.modal-overlay.show{display:flex}
+.modal-box{background:#fff;border-radius:8px;width:90%;max-width:800px;max-height:90vh;overflow-y:auto}
+.modal-header{padding:16px 20px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between}
+.modal-header h3{font-size:1rem;color:#2c2c2c}
+.modal-close{width:32px;height:32px;border:none;background:#f0f0f0;border-radius:50%;cursor:pointer;font-size:1.2rem;line-height:32px;color:#666}
+.modal-close:hover{background:#e0e0e0}
+.modal-content{padding:20px}
+
 </style>
 </head>
 <body>
@@ -135,6 +150,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans SC',sans
     <div class="panel" id="panel-works">
       <div class="card">
         <h3>作品列表</h3>
+        <div class="sort-controls">
+          <label>排序方式：</label>
+          <select id="works-sort" onchange="loadWorks()">
+            <option value="created_at_desc" selected>创建时间（最新）</option>
+            <option value="created_at_asc">创建时间（最早）</option>
+            <option value="year_desc">年份（降序）</option>
+            <option value="year_asc">年份（升序）</option>
+            <option value="title_asc">标题（A-Z）</option>
+            <option value="title_desc">标题（Z-A）</option>
+          </select>
+        </div>
         <div id="works-loading" class="loading">加载中...</div>
         <div id="works-content"></div>
       </div>
@@ -289,6 +315,59 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans SC',sans
   </div>
 </div>
 
+<!-- Edit Modal -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>编辑作品</h3>
+      <button class="modal-close" onclick="closeEditModal()">&times;</button>
+    </div>
+    <div class="modal-content">
+      <div class="form-row">
+        <label>作品标题</label>
+        <input type="text" id="edit-title" />
+      </div>
+      <div class="form-row">
+        <label>分类</label>
+        <select id="edit-category">
+          <option value="私宅">私宅</option>
+          <option value="商业">商业</option>
+          <option value="办公">办公</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>年份</label>
+        <input type="text" id="edit-year" />
+      </div>
+      <div class="form-row">
+        <label>标签（空格分隔）</label>
+        <input type="text" id="edit-tags" />
+      </div>
+      <div class="form-row">
+        <label>描述</label>
+        <textarea id="edit-desc" style="height:80px"></textarea>
+      </div>
+      <div class="form-row">
+        <label>现有图片（可拖拽排序，点击删除）</label>
+        <div class="upload-preview-grid" id="edit-preview-grid"></div>
+      </div>
+      <div class="form-row">
+        <label>添加新图片（可选，最多9张）</label>
+        <div class="upload-area" id="edit-upload-area" onclick="document.getElementById('edit-file').click()">
+          <p id="edit-upload-hint">点击选择图片，或拖拽图片到此处</p>
+        </div>
+        <input type="file" id="edit-file" accept="image/*" multiple style="display:none" onchange="handleEditFileSelect(this)" />
+        <div class="upload-preview-grid" id="edit-new-preview-grid"></div>
+      </div>
+      <div class="form-row">
+        <button onclick="doUpdate()">保存修改</button>
+        <button onclick="closeEditModal()" style="background:#999;margin-left:8px">取消</button>
+      </div>
+      <div id="edit-msg"></div>
+    </div>
+  </div>
+</div>
+
 <script>
 var token = '';
 var API_BASE = window.location.origin;
@@ -424,6 +503,12 @@ function deleteMessage(id) {
 
 // Works
 
+var allWorks = [];
+var currentEditWork = null;
+var editExistingImages = [];
+var editDeletedImages = [];
+var editNewFiles = [];
+
 function loadWorks() {
   apiPost('/api/admin', { action: 'works', token: token }).then(function(res) {
     var el = document.getElementById('works-content');
@@ -433,15 +518,46 @@ function loadWorks() {
       el.innerHTML = '<div class="empty">暂无作品</div>';
       return;
     }
+    allWorks = res.data;
+    
+    // Apply sorting
+    var sortBy = document.getElementById('works-sort').value;
+    var sorted = sortWorks(allWorks, sortBy);
+    
     var html = '<table class="data-table"><thead><tr><th>预览</th><th>标题</th><th>分类</th><th>年份</th><th>图片数</th><th>操作</th></tr></thead><tbody>';
-    res.data.forEach(function(w) {
+    sorted.forEach(function(w) {
       var firstImg = (w.image_urls && w.image_urls.length > 0) ? w.image_urls[0] : (w.image_url || '');
       var imgCount = (w.image_urls && w.image_urls.length) || (w.image_url ? 1 : 0);
-      html += '<tr><td>' + (firstImg ? '<img class="img-preview" src="' + esc(firstImg) + '" />' : '-') + '</td><td>' + esc(w.title) + '</td><td>' + esc(w.category || '-') + '</td><td>' + esc(w.year || '-') + '</td><td>' + imgCount + '</td><td><button class="btn-del" onclick="deleteWork(' + w.id + ')">删除</button></td></tr>';
+      html += '<tr><td>' + (firstImg ? '<img class="img-preview" src="' + esc(firstImg) + '" />' : '-') + '</td><td>' + esc(w.title) + '</td><td>' + esc(w.category || '-') + '</td><td>' + esc(w.year || '-') + '</td><td>' + imgCount + '</td><td><button class="btn-toggle" onclick="openEditModal(' + w.id + ')">编辑</button><button class="btn-del" onclick="deleteWork(' + w.id + ')">删除</button></td></tr>';
     });
     html += '</tbody></table>';
     el.innerHTML = html;
   });
+}
+
+function sortWorks(works, sortBy) {
+  var sorted = works.slice();
+  switch(sortBy) {
+    case 'created_at_desc':
+      sorted.sort(function(a, b) { return new Date(b.created_at) - new Date(a.created_at); });
+      break;
+    case 'created_at_asc':
+      sorted.sort(function(a, b) { return new Date(a.created_at) - new Date(b.created_at); });
+      break;
+    case 'year_desc':
+      sorted.sort(function(a, b) { return (b.year || 0) - (a.year || 0); });
+      break;
+    case 'year_asc':
+      sorted.sort(function(a, b) { return (a.year || 0) - (b.year || 0); });
+      break;
+    case 'title_asc':
+      sorted.sort(function(a, b) { return (a.title || '').localeCompare(b.title || ''); });
+      break;
+    case 'title_desc':
+      sorted.sort(function(a, b) { return (b.title || '').localeCompare(a.title || ''); });
+      break;
+  }
+  return sorted;
 }
 
 function deleteWork(id) {
@@ -753,6 +869,251 @@ function pad(n) { return n < 10 ? '0' + n : n; }
 function esc(s) {
   if (!s) return '';
   return s.toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Edit Work Functions
+function openEditModal(id) {
+  currentEditWork = allWorks.find(function(w) { return w.id === id; });
+  if (!currentEditWork) return;
+  
+  // Reset state
+  editExistingImages = [];
+  editDeletedImages = [];
+  editNewFiles = [];
+  
+  // Populate form
+  document.getElementById('edit-title').value = currentEditWork.title || '';
+  document.getElementById('edit-category').value = currentEditWork.category || '私宅';
+  document.getElementById('edit-year').value = currentEditWork.year || '';
+  document.getElementById('edit-tags').value = currentEditWork.tags || '';
+  document.getElementById('edit-desc').value = currentEditWork.description || '';
+  
+  // Load existing images
+  if (currentEditWork.image_urls && currentEditWork.image_urls.length > 0) {
+    editExistingImages = currentEditWork.image_urls.slice();
+  } else if (currentEditWork.image_url) {
+    editExistingImages = [currentEditWork.image_url];
+  }
+  renderEditExistingPreviews();
+  
+  // Clear new images
+  document.getElementById('edit-new-preview-grid').innerHTML = '';
+  document.getElementById('edit-new-preview-grid').classList.remove('show');
+  document.getElementById('edit-upload-hint').textContent = '点击选择图片，或拖拽图片到此处';
+  document.getElementById('edit-file').value = '';
+  document.getElementById('edit-msg').innerHTML = '';
+  
+  // Show modal
+  document.getElementById('edit-modal').classList.add('show');
+}
+
+function closeEditModal() {
+  document.getElementById('edit-modal').classList.remove('show');
+}
+
+function renderEditExistingPreviews() {
+  var grid = document.getElementById('edit-preview-grid');
+  if (editExistingImages.length === 0) {
+    grid.innerHTML = '<div class="empty" style="padding:0">暂无图片</div>';
+    grid.classList.add('show');
+    return;
+  }
+  var html = '';
+  editExistingImages.forEach(function(url, i) {
+    html += '<div class="upload-preview-item" draggable="true" data-index="' + i + '" ondragstart="onEditDragStart(event)" ondragover="onEditDragOver(event)" ondragleave="onEditDragLeave(event)" ondrop="onEditDrop(event)">';
+    html += '<span class="preview-index">' + (i + 1) + '</span>';
+    html += '<button class="preview-remove" onclick="event.stopPropagation();removeEditImage(' + i + ')" title="删除此图片">&times;</button>';
+    html += '<img src="' + url + '" alt="" />';
+    html += '</div>';
+  });
+  grid.innerHTML = html;
+  grid.classList.add('show');
+}
+
+var editDragIndex = -1;
+
+function onEditDragStart(e) {
+  editDragIndex = parseInt(e.target.closest('.upload-preview-item').dataset.index);
+  e.target.closest('.upload-preview-item').classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function onEditDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  e.target.closest('.upload-preview-item').classList.add('drag-over');
+}
+
+function onEditDragLeave(e) {
+  e.target.closest('.upload-preview-item').classList.remove('drag-over');
+}
+
+function onEditDrop(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  var targetItem = e.target.closest('.upload-preview-item');
+  targetItem.classList.remove('drag-over');
+  var targetIndex = parseInt(targetItem.dataset.index);
+  if (editDragIndex === targetIndex) return;
+  var moved = editExistingImages.splice(editDragIndex, 1)[0];
+  editExistingImages.splice(targetIndex, 0, moved);
+  document.querySelectorAll('#edit-preview-grid .upload-preview-item.dragging').forEach(function(el) { el.classList.remove('dragging'); });
+  renderEditExistingPreviews();
+}
+
+function removeEditImage(index) {
+  var url = editExistingImages[index];
+  editDeletedImages.push(url);
+  editExistingImages.splice(index, 1);
+  renderEditExistingPreviews();
+}
+
+function handleEditFileSelect(input) {
+  editNewFiles = Array.from(input.files).slice(0, 9 - editExistingImages.length);
+  var area = document.getElementById('edit-upload-area');
+  var hint = document.getElementById('edit-upload-hint');
+  if (editNewFiles.length === 0) {
+    area.classList.remove('has-file');
+    hint.textContent = '点击选择图片，或拖拽图片到此处';
+    document.getElementById('edit-new-preview-grid').classList.remove('show');
+    document.getElementById('edit-new-preview-grid').innerHTML = '';
+    return;
+  }
+  area.classList.add('has-file');
+  hint.textContent = '已选择 ' + editNewFiles.length + ' 张新图片';
+  renderEditNewPreviews();
+}
+
+function renderEditNewPreviews() {
+  var grid = document.getElementById('edit-new-preview-grid');
+  var html = '';
+  editNewFiles.forEach(function(file, i) {
+    var url = URL.createObjectURL(file);
+    html += '<div class="upload-preview-item" draggable="true" data-index="' + i + '" ondragstart="onEditNewDragStart(event)" ondragover="onEditNewDragOver(event)" ondragleave="onEditNewDragLeave(event)" ondrop="onEditNewDrop(event)">';
+    html += '<span class="preview-index">' + (i + 1) + '</span>';
+    html += '<button class="preview-remove" onclick="event.stopPropagation();removeEditNewImage(' + i + ')" title="删除此图片">&times;</button>';
+    html += '<img src="' + url + '" alt="' + file.name + '" />';
+    html += '</div>';
+  });
+  grid.innerHTML = html;
+  grid.classList.add('show');
+}
+
+var editNewDragIndex = -1;
+
+function onEditNewDragStart(e) {
+  editNewDragIndex = parseInt(e.target.closest('.upload-preview-item').dataset.index);
+  e.target.closest('.upload-preview-item').classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function onEditNewDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  e.target.closest('.upload-preview-item').classList.add('drag-over');
+}
+
+function onEditNewDragLeave(e) {
+  e.target.closest('.upload-preview-item').classList.remove('drag-over');
+}
+
+function onEditNewDrop(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  var targetItem = e.target.closest('.upload-preview-item');
+  targetItem.classList.remove('drag-over');
+  var targetIndex = parseInt(targetItem.dataset.index);
+  if (editNewDragIndex === targetIndex) return;
+  var moved = editNewFiles.splice(editNewDragIndex, 1)[0];
+  editNewFiles.splice(targetIndex, 0, moved);
+  document.querySelectorAll('#edit-new-preview-grid .upload-preview-item.dragging').forEach(function(el) { el.classList.remove('dragging'); });
+  renderEditNewPreviews();
+}
+
+function removeEditNewImage(index) {
+  editNewFiles.splice(index, 1);
+  var area = document.getElementById('edit-upload-area');
+  var hint = document.getElementById('edit-upload-hint');
+  if (editNewFiles.length === 0) {
+    area.classList.remove('has-file');
+    hint.textContent = '点击选择图片，或拖拽图片到此处';
+    document.getElementById('edit-new-preview-grid').classList.remove('show');
+    document.getElementById('edit-new-preview-grid').innerHTML = '';
+  } else {
+    hint.textContent = '已选择 ' + editNewFiles.length + ' 张新图片';
+    renderEditNewPreviews();
+  }
+}
+
+function doUpdate() {
+  var msgEl = document.getElementById('edit-msg');
+  if (editExistingImages.length === 0 && editNewFiles.length === 0) {
+    msgEl.innerHTML = '<div class="alert error">作品至少需要一张图片</div>';
+    return;
+  }
+  
+  msgEl.innerHTML = '<div class="alert" style="background:#fff3e0;color:#e65100">保存中...</div>';
+  
+  // Read new images
+  if (editNewFiles.length > 0) {
+    var total = editNewFiles.length;
+    var results = [];
+    var done = 0;
+    
+    function finish() {
+      results.sort(function(a, b) { return a.index - b.index; });
+      sendUpdate(results.map(function(r) { return r.data; }), results.map(function(r) { return r.name; }));
+    }
+    
+    editNewFiles.forEach(function(file, i) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        results.push({ name: file.name, data: e.target.result, index: i });
+        done++;
+        if (done === total) finish();
+      };
+      reader.onerror = function() {
+        done++;
+        if (done === total) finish();
+      };
+      reader.readAsDataURL(file);
+    });
+  } else {
+    sendUpdate([], []);
+  }
+  
+  function sendUpdate(newBases, newNames) {
+    var body = {
+      id: currentEditWork.id,
+      title: document.getElementById('edit-title').value || currentEditWork.title,
+      category: document.getElementById('edit-category').value,
+      year: document.getElementById('edit-year').value,
+      tags: document.getElementById('edit-tags').value,
+      description: document.getElementById('edit-desc').value,
+      deleted_urls: editDeletedImages,
+      ordered_urls: editExistingImages,
+      new_image_base64s: newBases,
+      new_image_filenames: newNames
+    };
+    
+    fetch(API_BASE + '/api/works', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token },
+      body: JSON.stringify(body)
+    }).then(function(r) { return r.json(); }).then(function(res) {
+      if (res.success) {
+        msgEl.innerHTML = '<div class="alert success">保存成功！</div>';
+        setTimeout(function() {
+          closeEditModal();
+          loadWorks();
+        }, 1000);
+      } else {
+        msgEl.innerHTML = '<div class="alert error">保存失败：' + (res.error || '未知错误') + '</div>';
+      }
+    }).catch(function() {
+      msgEl.innerHTML = '<div class="alert error">网络错误</div>';
+    });
+  }
 }
 </script>
 
