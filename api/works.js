@@ -333,14 +333,24 @@ module.exports = async function handler(req, res) {
         .eq('id', id)
         .single();
 
+      console.log('DEBUG - DELETE works - raw data from DB:', work);
+      
       // Collect all image URLs to delete
       let urlsToDelete = [];
       if (work?.image_urls) {
-        try { urlsToDelete = JSON.parse(work.image_urls); } catch(e) { urlsToDelete = []; }
+        console.log('DEBUG - DELETE works - raw image_urls:', work.image_urls);
+        try { 
+          urlsToDelete = JSON.parse(work.image_urls); 
+          console.log('DEBUG - DELETE works - parsed image_urls:', urlsToDelete);
+        } catch(e) { 
+          urlsToDelete = []; 
+          console.log('DEBUG - DELETE works - JSON parse error:', e);
+        }
       }
       // Backward compatibility
       if (urlsToDelete.length === 0 && work?.image_url) {
         urlsToDelete = [work.image_url];
+        console.log('DEBUG - DELETE works - using fallback image_url:', urlsToDelete);
       }
 
       // Delete all images from storage
