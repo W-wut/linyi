@@ -318,7 +318,10 @@ module.exports = async function handler(req, res) {
         return;
       }
       const body = getBody(req);
+      console.log('DEBUG - DELETE works - full body:', body);
+      
       const { id } = body || {};
+      console.log('DEBUG - DELETE works - id received:', id);
 
       if (!id) {
         res.writeHead(400, corsHeaders);
@@ -327,13 +330,14 @@ module.exports = async function handler(req, res) {
       }
 
       // Get image URLs first
-      const { data: work } = await supabase
+      const { data: work, error: queryError } = await supabase
         .from('works')
         .select('image_urls,image_url')
         .eq('id', id)
         .single();
 
       console.log('DEBUG - DELETE works - raw data from DB:', work);
+      console.log('DEBUG - DELETE works - query error:', queryError);
       
       // Collect all image URLs to delete
       let urlsToDelete = [];
