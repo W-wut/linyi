@@ -184,29 +184,67 @@ module.exports = async function handler(req, res) {
 
       // Process deleted images
       const deletedUrls = body.deleted_urls || [];
+      console.log('DEBUG - PUT works - deleted_urls received:', deletedUrls);
+      
       const urlsToDelete = [];
       for (const url of deletedUrls) {
         if (!url) continue;
-        // Try multiple URL patterns to extract file path
+        
         let path = null;
+        // Try multiple URL patterns to extract file path
         if (url.includes('/storage/v1/object/public/works/')) {
           path = url.split('/storage/v1/object/public/works/')[1];
+          console.log('DEBUG - URL pattern 1 (Supabase standard):', url, '->', path);
+        } else if (url.includes('/storage/v1/object/')) {
+          // Alternative: /storage/v1/object/<bucket>/<path>
+          const match = url.match(/\/storage\/v1\/object\/[^\/]+\/([^\/\?#]+)/);
+          if (match) {
+            path = match[1];
+            console.log('DEBUG - URL pattern 2 (storage/v1/object):', url, '->', path);
+          }
         } else if (url.includes('/works/')) {
           // Alternative pattern: /works/filename
           const match = url.match(/\/works\/([^\/\?#]+)/);
-          if (match) path = match[1];
+          if (match) {
+            path = match[1];
+            console.log('DEBUG - URL pattern 3 (/works/):', url, '->', path);
+          }
+        } else {
+          // Try to extract just the filename from any URL
+          const lastSlash = url.lastIndexOf('/');
+          if (lastSlash >= 0 && lastSlash < url.length - 1) {
+            path = url.substring(lastSlash + 1).split('?')[0].split('#')[0];
+            console.log('DEBUG - URL pattern 4 (filename extraction):', url, '->', path);
+          } else {
+            // Just use the URL as-is if it looks like a filename
+            if (url.includes('.') && !url.includes('://')) {
+              path = url;
+              console.log('DEBUG - URL pattern 5 (direct filename):', url, '->', path);
+            } else {
+              console.log('DEBUG - No URL pattern matched:', url);
+            }
+          }
         }
+        
         if (path) {
           // Decode URL encoded characters
           path = decodeURIComponent(path);
+          // Remove any query string or fragment that might remain
+          path = path.split('?')[0].split('#')[0];
           urlsToDelete.push(path);
         }
       }
+      console.log('DEBUG - Final paths to delete:', urlsToDelete);
+      
       if (urlsToDelete.length > 0) {
         const { error: storageError } = await supabase.storage.from('works').remove(urlsToDelete);
         if (storageError) {
           console.error('Failed to delete images from storage:', storageError);
+        } else {
+          console.log('Successfully deleted', urlsToDelete.length, 'files from storage');
         }
+      } else {
+        console.log('DEBUG - No files to delete from storage');
       }
 
       // Process new images
@@ -306,27 +344,56 @@ module.exports = async function handler(req, res) {
       }
 
       // Delete all images from storage
+      console.log('DEBUG - DELETE works - image URLs to process:', urlsToDelete);
       const pathsToRemove = [];
       for (const url of urlsToDelete) {
         if (!url) continue;
-        // Try multiple URL patterns to extract file path
+        
         let path = null;
         if (url.includes('/storage/v1/object/public/works/')) {
           path = url.split('/storage/v1/object/public/works/')[1];
+          console.log('DEBUG - DELETE - URL pattern 1 matched:', url, '->', path);
+        } else if (url.includes('/storage/v1/object/')) {
+          const match = url.match(/\/storage\/v1\/object\/[^\/]+\/([^\/\?#]+)/);
+          if (match) {
+            path = match[1];
+            console.log('DEBUG - DELETE - URL pattern 2 matched:', url, '->', path);
+          }
         } else if (url.includes('/works/')) {
           const match = url.match(/\/works\/([^\/\?#]+)/);
-          if (match) path = match[1];
+          if (match) {
+            path = match[1];
+            console.log('DEBUG - DELETE - URL pattern 3 matched:', url, '->', path);
+          }
+        } else {
+          const lastSlash = url.lastIndexOf('/');
+          if (lastSlash >= 0 && lastSlash < url.length - 1) {
+            path = url.substring(lastSlash + 1).split('?')[0].split('#')[0];
+            console.log('DEBUG - DELETE - URL pattern 4 (filename):', url, '->', path);
+          } else if (url.includes('.') && !url.includes('://')) {
+            path = url;
+            console.log('DEBUG - DELETE - URL pattern 5 (direct):', url, '->', path);
+          } else {
+            console.log('DEBUG - DELETE - No URL pattern matched:', url);
+          }
         }
+        
         if (path) {
-          path = decodeURIComponent(path);
+          path = decodeURIComponent(path).split('?')[0].split('#')[0];
           pathsToRemove.push(path);
         }
       }
+      console.log('DEBUG - DELETE - Final paths to remove:', pathsToRemove);
+      
       if (pathsToRemove.length > 0) {
         const { error: storageError } = await supabase.storage.from('works').remove(pathsToRemove);
         if (storageError) {
-          console.error('Failed to delete images from storage:', storageError);
+          console.error('DEBUG - DELETE - Failed to delete:', storageError);
+        } else {
+          console.log('DEBUG - DELETE - Successfully deleted', pathsToRemove.length, 'files');
         }
+      } else {
+        console.log('DEBUG - DELETE - No files to remove from storage');
       }
 
       const { error } = await supabase
