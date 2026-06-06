@@ -65,7 +65,8 @@ section{padding:100px 0}
 .phi-card p{font-size:.88rem;color:#a09888;line-height:1.7}
 
 /* ===== Portfolio ===== */
-.portfolio-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px}
+.portfolio-wrap{overflow:hidden;position:relative}
+.portfolio-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;transition:transform .1s linear}
 .project-card{position:relative;overflow:hidden;cursor:pointer;aspect-ratio:4/3;background:#e8dfd4;display:flex;align-items:center;justify-content:center}
 .project-card svg{position:absolute;width:60%;height:60%;opacity:.15}
 .project-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(to top,rgba(0,0,0,.7) 0%,rgba(0,0,0,.1) 60%);opacity:0;transition:opacity .4s;display:flex;flex-direction:column;justify-content:flex-end;padding:28px;pointer-events:none}
@@ -264,7 +265,9 @@ footer .socials a:hover{color:#b8a088}
   <div class="container">
     <h2 class="section-title">代表作品</h2>
     <div id="portfolio-loading" style="text-align:center;color:#888;padding:40px;font-size:.85rem">加载中...</div>
-    <div class="portfolio-grid" id="portfolio-grid" style="display:none"></div>
+    <div class="portfolio-wrap" id="portfolio-wrap" style="display:none">
+      <div class="portfolio-grid" id="portfolio-grid"></div>
+    </div>
   </div>
 </section>
 
@@ -585,32 +588,41 @@ window.addEventListener('load', function() {
 
 // ===== Portfolio (dynamic) =====
 var portfolioImages = {}; // { workId: [{src, alt}, ...] }
+var scrollY = 0;
+var scrollSpeed = 0.5; // 滚动速度
+var isScrolling = true;
+var scrollInterval = null;
+var allWorksData = [];
 
 function loadPortfolio() {
   fetch(API_BASE + '/api/works').then(function(r) { return r.json(); }).then(function(res) {
     var loading = document.getElementById('portfolio-loading');
+    var wrap = document.getElementById('portfolio-wrap');
     var grid = document.getElementById('portfolio-grid');
     loading.style.display = 'none';
-    grid.style.display = 'grid';
+    wrap.style.display = 'block';
 
     if (!res.success || !res.data || res.data.length === 0) {
       grid.innerHTML = '<div style="text-align:center;color:#999;padding:40px;font-size:.85rem;grid-column:1/-1">暂无作品展示</div>';
       return;
     }
 
+    allWorksData = res.data.concat(res.data); // 复制一份实现无限滚动
     var bgColors = ['#e8dfd4', '#cdc2b4', '#e1d6c9', '#d6cbbc', '#e5ddd0', '#c8bfb0'];
     var html = '';
-    res.data.forEach(function(w, i) {
-      var bg = bgColors[i % bgColors.length];
-      var tag = escHtml(w.category || '') + (w.year ? ' · ' + escHtml(w.year) : '');
-      var desc = escHtml(w.tags || '') + (w.description ? ' · ' + escHtml(w.description) : '');
+    allWorksData.forEach(function(w, i) {
+      var originalIndex = i % res.data.length;
+      var originalWork = res.data[originalIndex];
+      var bg = bgColors[originalIndex % bgColors.length];
+      var tag = escHtml(originalWork.category || '') + (originalWork.year ? ' · ' + escHtml(originalWork.year) : '');
+      var desc = escHtml(originalWork.tags || '') + (originalWork.description ? ' · ' + escHtml(originalWork.description) : '');
       // Support both image_urls (new) and image_url (old)
-      var images = w.image_urls && w.image_urls.length > 0 ? w.image_urls : (w.image_url ? [w.image_url] : []);
+      var images = originalWork.image_urls && originalWork.image_urls.length > 0 ? originalWork.image_urls : (originalWork.image_url ? [originalWork.image_url] : []);
       var imgCount = images.length;
-      portfolioImages[w.id] = images.map(function(src) { return { src: src, alt: w.title }; });
+      portfolioImages[originalWork.id] = images.map(function(src) { return { src: src, alt: originalWork.title }; });
 
       var hasImage = imgCount > 0;
-      var cid = 'work-' + w.id;
+      var cid = 'work-' + originalWork.id + '-' + i;
 
       html += '<div class="project-card carousel' + (imgCount > 1 ? '' : '') + '" style="background:' + bg + '"' + (hasImage ? '' : '') + '>';
 
@@ -619,19 +631,19 @@ function loadPortfolio() {
       if (hasImage) {
         if (imgCount === 1) {
           // Single image: simple click
-          html += '<img src="' + escAttr(images[0]) + '" alt="' + escAttr(w.title) + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0" onclick="openLightbox(\'' + escAttr(images[0]) + '\',\'' + escAttr(w.title) + '\',null,' + w.id + ');event.stopPropagation()" />';
+          html += '<img src="' + escAttr(images[0]) + '" alt="' + escAttr(originalWork.title) + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0" onclick="openLightbox(\'' + escAttr(images[0]) + '\',\'' + escAttr(originalWork.title) + '\',null,' + originalWork.id + ');event.stopPropagation();stopPortfolioScroll()" />';
         } else {
           // Multiple images: carousel
           html += '<div class="carousel-slides" id="carousel-' + cid + '">';
           images.forEach(function(src, j) {
-            html += '<img src="' + escAttr(src) + '" alt="' + escAttr(w.title) + '" loading="lazy" onclick="openLightbox(\'' + escAttr(src) + '\',\'' + escAttr(w.title) + '\',\'carousel-' + cid + '\',' + w.id + ');event.stopPropagation()" />';
+            html += '<img src="' + escAttr(src) + '" alt="' + escAttr(originalWork.title) + '" loading="lazy" onclick="openLightbox(\'' + escAttr(src) + '\',\'' + escAttr(originalWork.title) + '\',\'carousel-' + cid + '\',' + originalWork.id + ');event.stopPropagation();stopPortfolioScroll()" />';
           });
           html += '</div>';
-          html += '<button class="carousel-btn prev" style="top:50%;transform:translateY(-50%);left:8px" onclick="prevSlide(\'carousel-' + cid + '\');event.stopPropagation()">&#8249;</button>';
-          html += '<button class="carousel-btn next" style="top:50%;transform:translateY(-50%);right:8px" onclick="nextSlide(\'carousel-' + cid + '\');event.stopPropagation()">&#8250;</button>';
+          html += '<button class="carousel-btn prev" style="top:50%;transform:translateY(-50%);left:8px" onclick="prevSlide(\'carousel-' + cid + '\');event.stopPropagation();stopPortfolioScroll()">&#8249;</button>';
+          html += '<button class="carousel-btn next" style="top:50%;transform:translateY(-50%);right:8px" onclick="nextSlide(\'carousel-' + cid + '\');event.stopPropagation();stopPortfolioScroll()">&#8250;</button>';
           html += '<div class="carousel-dots" id="carousel-' + cid + '-dots">';
           images.forEach(function(src, j) {
-            html += '<button class="carousel-dot' + (j === 0 ? ' active' : '') + '" onclick="goSlide(\'carousel-' + cid + '\',' + j + ');event.stopPropagation()"></button>';
+            html += '<button class="carousel-dot' + (j === 0 ? ' active' : '') + '" onclick="goSlide(\'carousel-' + cid + '\',' + j + ');event.stopPropagation();stopPortfolioScroll()"></button>';
           });
           html += '</div>';
         }
@@ -639,18 +651,41 @@ function loadPortfolio() {
         html += '<svg viewBox="0 0 80 80" style="position:absolute;width:60%;height:60%;opacity:.15"><rect x="5" y="10" width="70" height="60" rx="2" stroke="#b8a088" stroke-width="1" fill="none"/><circle cx="40" cy="30" r="10" stroke="#b8a088" stroke-width="1" fill="none"/><rect x="20" y="50" width="40" height="15" rx="1" stroke="#b8a088" stroke-width="1" fill="none"/></svg>';
       }
 
-      html += '<div class="project-overlay">';
-      html += '<h3>' + escHtml(w.title || '未命名') + '</h3>';
+      html += '<div class="project-overlay" onclick="stopPortfolioScroll()">';
+      html += '<h3>' + escHtml(originalWork.title || '未命名') + '</h3>';
       if (desc) html += '<p>' + desc + '</p>';
       html += '</div>';
       html += '</div>';
     });
     grid.innerHTML = html;
+
+    // 开始滚动
+    startPortfolioScroll();
   }).catch(function() {
     document.getElementById('portfolio-loading').style.display = 'none';
-    document.getElementById('portfolio-grid').style.display = 'grid';
+    document.getElementById('portfolio-wrap').style.display = 'block';
     document.getElementById('portfolio-grid').innerHTML = '<div style="text-align:center;color:#999;padding:40px;font-size:.85rem;grid-column:1/-1">作品加载失败</div>';
   });
+}
+
+function startPortfolioScroll() {
+  if (scrollInterval) clearInterval(scrollInterval);
+  isScrolling = true;
+  scrollInterval = setInterval(function() {
+    if (!isScrolling) return;
+    var grid = document.getElementById('portfolio-grid');
+    if (!grid) return;
+    scrollY += scrollSpeed;
+    var halfHeight = grid.scrollHeight / 2;
+    if (scrollY >= halfHeight) {
+      scrollY = 0;
+    }
+    grid.style.transform = 'translateY(-' + scrollY + 'px)';
+  }, 30);
+}
+
+function stopPortfolioScroll() {
+  isScrolling = false;
 }
 
 function escAttr(s) {
