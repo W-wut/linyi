@@ -567,6 +567,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Portfolio 区域滚轮手动滚动
   var pWrap = document.getElementById('portfolio-wrap');
+  var portfolioScrollResumeTimer = null;
   if (pWrap) {
     pWrap.addEventListener('wheel', function(e) {
       var grid = document.getElementById('portfolio-grid');
@@ -574,21 +575,20 @@ document.addEventListener('DOMContentLoaded', function() {
       if (grid.offsetHeight <= pWrap.clientHeight) return;
 
       e.preventDefault();
-      e.stopPropagation();
 
       isScrolling = false;
-      clearTimeout(window._portfolioScrollResume);
+      clearTimeout(portfolioScrollResumeTimer);
 
       var multiplier = 2.5;
-      scrollY += e.deltaY * multiplier;
+      portfolioScrollY += e.deltaY * multiplier;
 
       var maxScroll = grid.offsetHeight - pWrap.clientHeight;
-      if (scrollY < 0) scrollY = 0;
-      if (scrollY > maxScroll) scrollY = maxScroll;
+      if (portfolioScrollY < 0) portfolioScrollY = 0;
+      if (portfolioScrollY > maxScroll) portfolioScrollY = maxScroll;
 
-      grid.style.transform = 'translateY(-' + scrollY + 'px)';
+      grid.style.transform = 'translateY(-' + portfolioScrollY + 'px)';
 
-      window._portfolioScrollResume = setTimeout(function() {
+      portfolioScrollResumeTimer = setTimeout(function() {
         isScrolling = true;
       }, 2000);
     }, { passive: false });
@@ -617,7 +617,7 @@ window.addEventListener('load', function() {
 
 // ===== Portfolio (dynamic) =====
 var portfolioImages = {}; // { workId: [{src, alt}, ...] }
-var scrollY = 0;
+var portfolioScrollY = 0;
 var scrollSpeed = 0.5; // 滚动速度
 var isScrolling = true;
 var scrollInterval = null;
@@ -706,13 +706,13 @@ function startPortfolioScroll() {
     if (!isScrolling) return;
     var grid = document.getElementById('portfolio-grid');
     if (!grid) return;
-    scrollY += scrollSpeed;
+    portfolioScrollY += scrollSpeed;
     var gridHeight = grid.offsetHeight;
     var wrapHeight = grid.parentElement.clientHeight;
-    if (scrollY >= gridHeight - wrapHeight) {
-      scrollY = 0;
+    if (portfolioScrollY >= gridHeight - wrapHeight) {
+      portfolioScrollY = 0;
     }
-    grid.style.transform = 'translateY(-' + scrollY + 'px)';
+    grid.style.transform = 'translateY(-' + portfolioScrollY + 'px)';
   }, 30);
 }
 
